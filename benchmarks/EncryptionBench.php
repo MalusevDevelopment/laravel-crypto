@@ -4,133 +4,55 @@ declare(strict_types=1);
 
 namespace CodeLieutenant\LaravelCrypto\Benchmarks;
 
-use CodeLieutenant\LaravelCrypto\Encoder\IgbinaryEncoder;
 use CodeLieutenant\LaravelCrypto\Encoder\JsonEncoder;
-use CodeLieutenant\LaravelCrypto\Encoder\PhpEncoder;
-use CodeLieutenant\LaravelCrypto\Encryption\AesGcm256Encrypter;
-use CodeLieutenant\LaravelCrypto\Encryption\XChaCha20Poly1305Encrypter;
-use CodeLieutenant\LaravelCrypto\Support\Random;
+use CodeLieutenant\LaravelCrypto\Encryption\Encrypter as LibEncrypter;
+use CodeLieutenant\LaravelCrypto\Encryption\Providers\Aegis128LGCMEncrypter;
+use CodeLieutenant\LaravelCrypto\Encryption\Providers\Aegis256GCMEncrypter;
+use CodeLieutenant\LaravelCrypto\Encryption\Providers\AesGcm256Encrypter;
+use CodeLieutenant\LaravelCrypto\Encryption\Providers\XChaCha20Poly1305Encrypter;
 use Generator;
-use Illuminate\Encryption\Encrypter;
-use Monolog\Logger;
+use Illuminate\Encryption\Encrypter as LaravelEncrypter;
+use PhpBench\Attributes\Iterations;
 use PhpBench\Attributes\ParamProviders;
+use PhpBench\Attributes\Revs;
 
 class EncryptionBench
 {
-    #[ParamProviders('provideLaravelEncryption')]
-    public function benchLaravelEncryptionWithoutSerialization(array $params): void
+    #[ParamProviders('provideEncrypters')]
+    #[Revs(1000)]
+    #[Iterations(5)]
+    public function benchEncryption(array $params): void
     {
-        $data = $params['data'];
-        /** @var Encrypter $encrypter */
-        $encrypter = $params['encrypter'];
-
-        $value = $encrypter->encryptString($data);
+        $params['encrypter']->encryptString($params['data']);
     }
 
-    #[ParamProviders('provideLaravelEncryption')]
-    public function benchLaravelEncryptionWithSerialization(array $params): void
-    {
-        /** @var array $data */
-        $data = $params['data'];
-        /** @var Encrypter $encrypter */
-        $encrypter = $params['encrypter'];
-
-        $value = $encrypter->encrypt($data);
-    }
-
-    public function providerChaCha20Crypto(): Generator
-    {
-        $logger = new Logger('benchmark');
-
-        $encoders = [
-            'PHP' => new PhpEncoder,
-            'JSON' => new JsonEncoder,
-            'IGBINARY' => new IgbinaryEncoder,
-        ];
-
-        $data = [
-            '32' => Random::bytes(32), // 32B
-            '128' => Random::bytes(128), // 128B
-            '256' => Random::bytes(256), // 256B
-            '1KiB' => Random::bytes(1024), // 1KB
-            '32KiB' => Random::bytes(32 * 1024), // 32KB
-            '1MiB' => Random::bytes(1024 * 1024), // 1MB
-        ];
-
-        foreach ($data as $dataName => $dataValue) {
-            foreach ($encoders as $encoderName => $encoder) {
-                yield 'ChaCha20-'.$encoderName.'-'.$dataName => [
-                    'data' => $dataValue,
-                    'encrypter' => new XChaCha20Poly1305Encrypter(new KeyKeyLoader(Random::bytes(32)), $logger, $encoder),
-                ];
-            }
-        }
-    }
-
-    public function providerAESGCMCrypto(): Generator
-    {
-        $logger = new Logger('benchmark');
-
-        $encoders = [
-            'PHP' => new PhpEncoder,
-            'JSON' => new JsonEncoder,
-            'IGBINARY' => new IgbinaryEncoder,
-        ];
-
-        $data = [
-            '32' => Random::bytes(32), // 32B
-            '128' => Random::bytes(128), // 128B
-            '256' => Random::bytes(256), // 256B
-            '1KiB' => Random::bytes(1024), // 1KB
-            '32KiB' => Random::bytes(32 * 1024), // 32KB
-            '1MiB' => Random::bytes(1024 * 1024), // 1MB
-        ];
-
-        foreach ($data as $dataName => $dataValue) {
-            foreach ($encoders as $encoderName => $encoder) {
-                yield 'ChaCha20-'.$encoderName.'-'.$dataName => [
-                    'data' => $dataValue,
-                    'encrypter' => new AesGcm256Encrypter(new KeyKeyLoader(Random::bytes(32)), $logger, $encoder),
-                ];
-            }
-        }
-    }
-
-    public function provideLaravelEncryption(): Generator
+    public function provideEncrypters(): Generator
     {
         $data = [
-            '32' => Random::bytes(32), // 32B
-            '128' => Random::bytes(128), // 128B
-            '256' => Random::bytes(256), // 256B
-            '1KiB' => Random::bytes(1024), // 1KB
-            '32KiB' => Random::bytes(32 * 1024), // 32KB
-            '1MiB' => Random::bytes(1024 * 1024), // 1MB
+            '1KiB' => random_bytes(1024),
+            '32KiB' => random_bytes(32 * 1024),
+            '1MiB' => random_bytes(1024 * 1024),
         ];
+
+        $key32 = random_bytes(32);
+        $key16 = random_bytes(16);
 
         $encrypters = [
-            'AES-256-CBC' => new Encrypter(Random::bytes(32), 'AES-256-CBC'),
-            'AES-128-CBC' => new Encrypter(Random::bytes(32), 'AES-128-CBC'),
-            'AES-256-GCM' => new Encrypter(Random::bytes(32), 'AES-256-GCM'),
-            'AES-128-GCM' => new Encrypter(Random::bytes(32), 'AES-128-GCM'),
+            'Laravel AES-256-CBC' => new LaravelEncrypter($key32, 'AES-256-CBC'),
+            'Laravel AES-256-GCM' => new LaravelEncrypter($key32, 'AES-256-GCM'),
+            'Sodium AES-256-GCM' => new LibEncrypter(new KeyLoader($key32), new JsonEncoder, null, new AesGcm256Encrypter),
+            'Sodium XChaCha20-Poly1305' => new LibEncrypter(new KeyLoader($key32), new JsonEncoder, null, new XChaCha20Poly1305Encrypter),
+            'Sodium AEGIS-128L' => new LibEncrypter(new KeyLoader($key16), new JsonEncoder, null, new Aegis128LGCMEncrypter),
+            'Sodium AEGIS-256' => new LibEncrypter(new KeyLoader($key32), new JsonEncoder, null, new Aegis256GCMEncrypter),
         ];
 
         foreach ($data as $dataName => $dataValue) {
             foreach ($encrypters as $encrypterName => $encrypter) {
-                yield 'Laravel-'.$encrypterName.'-'.$dataName => [
+                yield "{$encrypterName}-{$dataName}" => [
                     'data' => $dataValue,
                     'encrypter' => $encrypter,
                 ];
             }
         }
     }
-    //
-    //    public function benchXChaCha20Poly1305(): void
-    //    {
-    //        $this->xchacha->encryptString($this->data);
-    //    }
-    //
-    //    public function benchAes256gcm(): void
-    //    {
-    //        $this->aes256gcm->encryptString($this->data);
-    //    }
 }

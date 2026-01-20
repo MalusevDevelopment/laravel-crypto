@@ -68,7 +68,7 @@ php artisan vendor:publish --provider="CodeLieutenant\LaravelCrypto\ServiceProvi
 Update your `cipher` in `config/app.php`:
 
 ```php
-'cipher' => 'Sodium_AES256GCM', // Options: Sodium_AES256GCM, Sodium_XChaCha20Poly1305
+'cipher' => 'Sodium_AES256GCM', // Options: Sodium_AES256GCM, Sodium_XChaCha20Poly1305, Sodium_AEGIS256GCM, Sodium_AEGIS128LGCM
 ```
 
 ### 4. Generating Keys
@@ -117,6 +117,45 @@ $sig = Sign::sign('message');
 // EdDSA
 $sig = Sign::eddsaSign('message');
 ```
+
+## Performance
+
+Benchmarks conducted on various data sizes (PHP 8.5.1, Sodium extension enabled) on a Macbook M4 Pro 48GB RAM.
+
+### 1 KiB Payload
+
+| Algorithm | Encryption | Decryption |
+|-----------|------------|------------|
+| Laravel AES-256-CBC | 8.09 μs | 9.98 μs |
+| Laravel AES-256-GCM | 3.37 μs | 5.33 μs |
+| **Sodium AES-256-GCM** | 2.39 μs | 2.58 μs |
+| **Sodium AEGIS-128L** | **2.03 μs** | **2.14 μs** |
+| **Sodium AEGIS-256** | 2.06 μs | 2.27 μs |
+| Sodium XChaCha20-Poly1305 | 3.41 μs | 3.58 μs |
+
+### 32 KiB Payload
+
+| Algorithm | Encryption | Decryption |
+|-----------|------------|------------|
+| Laravel AES-256-CBC | 151.01 μs | 181.81 μs |
+| Laravel AES-256-GCM | 35.81 μs | 81.98 μs |
+| **Sodium AES-256-GCM** | 26.93 μs | 29.22 μs |
+| **Sodium AEGIS-128L** | **18.23 μs** | **20.68 μs** |
+| **Sodium AEGIS-256** | 18.86 μs | 21.82 μs |
+| Sodium XChaCha20-Poly1305 | 58.40 μs | 60.90 μs |
+
+### 1 MiB Payload
+
+| Algorithm | Encryption | Decryption |
+|-----------|------------|------------|
+| Laravel AES-256-CBC | 5.02 ms | 7.57 ms |
+| Laravel AES-256-GCM | 1.31 ms | 3.94 ms |
+| **Sodium AES-256-GCM** | 1.11 ms | 1.88 ms |
+| **Sodium AEGIS-128L** | 0.90 ms | **1.60 ms** |
+| **Sodium AEGIS-256** | **0.82 ms** | 1.65 ms |
+| Sodium XChaCha20-Poly1305 | 2.21 ms | 2.90 ms |
+
+Sodium-based algorithms provide more consistent performance and are significantly faster for decryption of large payloads compared to Laravel's default implementations. AEGIS algorithms offer top-tier performance on modern hardware.
 
 ## Documentation
 

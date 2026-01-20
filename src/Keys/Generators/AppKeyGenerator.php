@@ -7,7 +7,7 @@ namespace CodeLieutenant\LaravelCrypto\Keys\Generators;
 use CodeLieutenant\LaravelCrypto\Contracts\KeyGenerator;
 use CodeLieutenant\LaravelCrypto\Enums\Encryption;
 use CodeLieutenant\LaravelCrypto\Traits\EnvKeySaver;
-use Illuminate\Contracts\Config\Repository;
+use Illuminate\Contracts\Config\Repository as Config;
 use Illuminate\Encryption\Encrypter;
 
 final readonly class AppKeyGenerator implements KeyGenerator
@@ -20,7 +20,7 @@ final readonly class AppKeyGenerator implements KeyGenerator
 
     public const string ENV = 'APP_KEY';
 
-    public function __construct(private Repository $config) {}
+    public function __construct(private Config $config) {}
 
     public function generate(?string $write): ?string
     {
@@ -31,7 +31,9 @@ final readonly class AppKeyGenerator implements KeyGenerator
             match (Encryption::tryFrom($cipher)) {
                 Encryption::SodiumAES256GCM => sodium_crypto_aead_aes256gcm_keygen(),
                 Encryption::SodiumXChaCha20Poly1305 => sodium_crypto_aead_xchacha20poly1305_ietf_keygen(),
-                default => Encrypter::generateKey($cipher),
+                Encryption::SodiumAEGIS256GCM => sodium_crypto_aead_aegis256_keygen(),
+                Encryption::SodiumAEGIS128LGCM => sodium_crypto_aead_aegis128l_keygen(),
+                null => Encrypter::generateKey($cipher),
             }
         );
 

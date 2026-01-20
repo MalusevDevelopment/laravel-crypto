@@ -8,8 +8,12 @@ use CodeLieutenant\LaravelCrypto\Tests\TestCase;
 
 uses(TestCase::class)->in(__DIR__);
 
-function inMemoryKeyLoader(): KeyLoader
+function inMemoryKeyLoader(?int $length = null): KeyLoader
 {
+    if ($length !== null) {
+        return new InMemoryAppKeyKeyLoader(base64_encode(random_bytes($length)));
+    }
+
     return new InMemoryAppKeyKeyLoader(config('app.key'));
 }
 

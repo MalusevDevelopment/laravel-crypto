@@ -1,5 +1,10 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="Tests" type="PestRunConfigurationType">
+    <CommandLine>
+      <envs>
+        <env name="XDEBUG_MODE" value="coverage,develop,debug" />
+      </envs>
+    </CommandLine>
     <PestRunner configuration_file="$PROJECT_DIR$/phpunit.xml" directory="$PROJECT_DIR$" method="" scope="ConfigurationFile" use_alternative_configuration_file="true" parallel_testing_enabled="true" />
     <method v="2" />
   </configuration>

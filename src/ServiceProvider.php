@@ -14,8 +14,11 @@ use CodeLieutenant\LaravelCrypto\Encoder\IgbinaryEncoder;
 use CodeLieutenant\LaravelCrypto\Encoder\JsonEncoder;
 use CodeLieutenant\LaravelCrypto\Encoder\MessagePackEncoder;
 use CodeLieutenant\LaravelCrypto\Encoder\PhpEncoder;
-use CodeLieutenant\LaravelCrypto\Encryption\AesGcm256Encrypter;
-use CodeLieutenant\LaravelCrypto\Encryption\XChaCha20Poly1305Encrypter;
+use CodeLieutenant\LaravelCrypto\Encryption\Encrypter as LibEncrypter;
+use CodeLieutenant\LaravelCrypto\Encryption\Providers\Aegis128LGCMEncrypter;
+use CodeLieutenant\LaravelCrypto\Encryption\Providers\Aegis256GCMEncrypter;
+use CodeLieutenant\LaravelCrypto\Encryption\Providers\AesGcm256Encrypter;
+use CodeLieutenant\LaravelCrypto\Encryption\Providers\XChaCha20Poly1305Encrypter;
 use CodeLieutenant\LaravelCrypto\Enums\Encryption;
 use CodeLieutenant\LaravelCrypto\Hashing\Blake2b;
 use CodeLieutenant\LaravelCrypto\Hashing\HashingManager;
@@ -57,8 +60,9 @@ class ServiceProvider extends EncryptionServiceProvider
     #[Override]
     public function register(): void
     {
+        $this->registerGenerators();
+
         if ($this->app->runningInConsole()) {
-            $this->registerGenerators();
             $this->commands([GenerateCryptoKeysCommand::class]);
         }
 
@@ -134,7 +138,7 @@ class ServiceProvider extends EncryptionServiceProvider
         ];
 
         foreach ($hmacSigners as $signer) {
-            $this->app->singleton($signer, function (Application $app) use ($signer): \CodeLieutenant\LaravelCrypto\Signing\Hmac\Blake2b|\CodeLieutenant\LaravelCrypto\Signing\Hmac\Sha256|\CodeLieutenant\LaravelCrypto\Signing\Hmac\Sha512 {
+            $this->app->singleton($signer, function (Application $app) use ($signer): HmacBlake2b|HmacSha256|HmacSha512 {
                 $config = $app->make(Repository::class)->get('crypto.signing.config.'.$signer);
                 $keyLoader = $app->make(HmacKeyLoader::class);
 
@@ -176,30 +180,25 @@ class ServiceProvider extends EncryptionServiceProvider
     #[Override]
     protected function registerEncrypter(): void
     {
-        foreach ([AesGcm256Encrypter::class, XChaCha20Poly1305Encrypter::class] as $encryptor) {
-            $this->app->singleton($encryptor);
-            $this->app->when($encryptor)
-                ->needs(KeyLoader::class)
-                ->give(AppKeyLoader::class);
-        }
-
-        $func = static function (Application $app) {
+        $func = static function (Application $app): \Illuminate\Encryption\Encrypter|LibEncrypter {
             $cipher = $app->make(Repository::class)->get('app.cipher');
-
+            $keyLoader = $app->make(AppKeyLoader::class);
             $enc = Encryption::tryFrom($cipher);
-
             if ($enc === null) {
-                return new LaravelConcreteEncrypter($app->make(AppKeyLoader::class)->getKey(), $cipher);
+                return new LaravelConcreteEncrypter($keyLoader->getKey(), $cipher);
             }
 
-            return match ($enc) {
-                Encryption::SodiumAES256GCM => $app->make(AesGcm256Encrypter::class),
-                Encryption::SodiumXChaCha20Poly1305 => $app->make(XChaCha20Poly1305Encrypter::class),
-                Encryption::AES256GCM, Encryption::AES256CBC => new LaravelConcreteEncrypter(
-                    key: $app->make(AppKeyLoader::class)->getKey(),
-                    cipher: $enc->value,
-                ),
-            };
+            return new LibEncrypter(
+                keyLoader: $keyLoader,
+                encoder: $app->make(Encoder::class),
+                logger: $app->make(LoggerInterface::class),
+                encrypter: $app->make(match ($enc) {
+                    Encryption::SodiumAES256GCM => AesGcm256Encrypter::class,
+                    Encryption::SodiumXChaCha20Poly1305 => XChaCha20Poly1305Encrypter::class,
+                    Encryption::SodiumAEGIS256GCM => Aegis256GCMEncrypter::class,
+                    Encryption::SodiumAEGIS128LGCM => Aegis128LGCMEncrypter::class,
+                }),
+            );
         };
 
         $this->app->singleton(Randomizer::class, fn (): Randomizer => new Randomizer(new Secure));

@@ -56,8 +56,8 @@ return RectorConfig::configure()
         LaravelSetList::LARAVEL_IF_HELPERS,
         LaravelSetList::LARAVEL_LEGACY_FACTORIES_TO_CLASSES,
         SetList::GMAGICK_TO_IMAGICK,
-    // SetList::PHP_85,
-    SetList::PHP_84,
+        // SetList::PHP_85,
+        SetList::PHP_84,
         SetList::PHP_83,
         SetList::PHP_82,
         SetList::PHP_81,
@@ -72,9 +72,9 @@ return RectorConfig::configure()
         DeclareStrictTypesRector::class,
         PropertyHookRector::class,
         JsonThrowOnErrorRector::class,
-    // SequentialAssignmentsToPipeOperatorRector::class,
-    // NestedFuncCallsToPipeOperatorRector::class,
-    NestedAnnotationToAttributeRector::class,
+        // SequentialAssignmentsToPipeOperatorRector::class,
+        // NestedFuncCallsToPipeOperatorRector::class,
+        NestedAnnotationToAttributeRector::class,
         MbStrContainsRector::class,
         AddSensitiveParameterAttributeRector::class,
         AddReturnDocblockDataProviderRector::class,
@@ -98,9 +98,9 @@ return RectorConfig::configure()
         DirnameDirConcatStringToDirectStringPathRector::class,
         DynamicDocBlockPropertyToNativePropertyRector::class,
         AddPropertyTypeDeclarationRector::class,
-    // ParseFileRector::class,
-    // AnnotationWithValueToAttributeRector::class,
-])
+        // ParseFileRector::class,
+        // AnnotationWithValueToAttributeRector::class,
+    ])
     ->withImportNames(
         removeUnusedImports: true,
     )
@@ -110,9 +110,9 @@ return RectorConfig::configure()
         cacheClass: FileCacheStorage::class,
     )
     ->withPaths([
-    __DIR__ . '/src',
-    __DIR__ . '/tests',
-    __DIR__ . '/config',
+        __DIR__.'/src',
+        __DIR__.'/tests',
+        __DIR__.'/config',
     ])
     ->withPreparedSets(
         deadCode: true,
