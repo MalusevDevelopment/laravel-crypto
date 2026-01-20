@@ -4,3 +4,4 @@ vendor/
 coverage.xml
 teamcity.txt
 junit.xml
+*.txt

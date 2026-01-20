@@ -23,19 +23,17 @@ final class Base64
 
     public static function urlEncode(string $binary): string
     {
-        return str_replace(['+', '/'], ['-', '_'], self::encode($binary));
+        return strtr(base64_encode($binary), '+/', '-_');
     }
 
     public static function urlEncodeNoPadding(string $binary): string
     {
-        return str_replace(['+', '/', '='], ['-', '_', ''], self::encode($binary));
+        return rtrim(strtr(base64_encode($binary), '+/', '-_'), '=');
     }
 
     public static function urlDecode(string $base64): string
     {
-        $str = str_replace(['-', '_'], ['+', '/'], $base64);
-
-        return self::decode($str);
+        return base64_decode(strtr($base64, '-_', '+/'), true);
     }
 
     public static function constantEncode(string $binary): string
