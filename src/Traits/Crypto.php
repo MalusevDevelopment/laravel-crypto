@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CodeLieutenant\LaravelCrypto\Traits;
 
 use CodeLieutenant\LaravelCrypto\Enums\Encryption;
-use CodeLieutenant\LaravelCrypto\Support\Random;
+use CodeLieutenant\LaravelCrypto\Facades\Random;
 use Illuminate\Encryption\Encrypter as LaravelEncrypter;
 
 trait Crypto
@@ -17,29 +17,26 @@ trait Crypto
         return $this->keyLoader->getKey();
     }
 
-    public function getAllKeys()
+    public function getAllKeys(): array
     {
-        return [$this->getKey()];
+        return [$this->getKey(), ...$this->getPreviousKeys()];
     }
 
-    public function getPreviousKeys()
+    /**
+     * @return array{}
+     */
+    public function getPreviousKeys(): array
     {
         return [];
     }
 
     public static function supported(string $key, string $cipher): bool
     {
-        $encType = Encryption::tryFrom($cipher);
-
-        if ($encType === null) {
-            return LaravelEncrypter::supported($key, $cipher);
-        }
-
-        if ($encType === Encryption::SodiumAES256GCM && !sodium_crypto_aead_aes256gcm_is_available()) {
-            return false;
-        }
-
-        return strlen($key) === $encType->keySize();
+        return match ($encType = Encryption::tryFrom($cipher)) {
+            null => LaravelEncrypter::supported($key, $cipher),
+            Encryption::SodiumAES256GCM => sodium_crypto_aead_aes256gcm_is_available(),
+            default => strlen($key) === $encType->keySize()
+        };
     }
 
     public function encryptString($value): string
@@ -57,10 +54,10 @@ trait Crypto
         if ($previous !== null) {
             $copy = $previous;
             sodium_increment($copy);
+
             return $copy;
         }
 
         return Random::bytes(static::nonceSize());
     }
-
 }

@@ -4,16 +4,19 @@ declare(strict_types=1);
 
 namespace CodeLieutenant\LaravelCrypto\Hashing;
 
+use CodeLieutenant\LaravelCrypto\Contracts\Hashing;
+use CodeLieutenant\LaravelCrypto\Hashing\Traits\Blake2b;
+use CodeLieutenant\LaravelCrypto\Hashing\Traits\Sha256;
+use CodeLieutenant\LaravelCrypto\Hashing\Traits\Sha512;
 use CodeLieutenant\LaravelCrypto\Traits\ConstantTimeCompare;
 use Illuminate\Support\Manager;
-use CodeLieutenant\LaravelCrypto\Contracts\Hashing;
 
 class HashingManager extends Manager implements Hashing
 {
-    use Traits\Blake2b;
-    use Traits\Sha256;
-    use Traits\Sha512;
+    use Blake2b;
     use ConstantTimeCompare;
+    use Sha256;
+    use Sha512;
 
     public function hash(string $data): string
     {

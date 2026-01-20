@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace CodeLieutenant\LaravelCrypto\Signing\Traits;
 
+use CodeLieutenant\LaravelCrypto\Signing\Hmac\Blake2b as Blake2bSigning;
+
 trait Blake2b
 {
-    protected ?\CodeLieutenant\LaravelCrypto\Signing\Hmac\Blake2b $blake2b = null;
+    protected ?Blake2bSigning $blake2b = null;
 
     public function blake2bSign(string $data): string
     {
@@ -23,13 +25,8 @@ trait Blake2b
         return $this->createBlake2bDriver()->verify($message, $hmac);
     }
 
-    public function createBlake2bDriver(): \CodeLieutenant\LaravelCrypto\Signing\Hmac\Blake2b
+    public function createBlake2bDriver(): Blake2bSigning
     {
-        if ($this->blake2b === null) {
-            $this->blake2b = $this->container->get(Blake2b::class);
-        }
-
-        return $this->blake2b;
+        return $this->blake2b ??= $this->container->get(Blake2b::class);
     }
-
 }

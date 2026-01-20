@@ -8,9 +8,7 @@ use CodeLieutenant\LaravelCrypto\Contracts\Encoder;
 
 class JsonEncoder implements Encoder
 {
-    public function __construct(private readonly bool $asArray = true)
-    {
-    }
+    public function __construct(private readonly bool $asArray = true) {}
 
     public function encode(mixed $value): string
     {

@@ -10,9 +10,10 @@ final class Base64
     {
         return base64_encode($binary);
     }
+
     public static function encodeNoPadding(string $binary): string
     {
-        return rtrim(base64_encode($binary),'=');
+        return rtrim(base64_encode($binary), '=');
     }
 
     public static function decode(string $base64): string
@@ -33,40 +34,41 @@ final class Base64
     public static function urlDecode(string $base64): string
     {
         $str = str_replace(['-', '_'], ['+', '/'], $base64);
+
         return self::decode($str);
     }
 
-    public static function constantEncode(string $binary): ?string
+    public static function constantEncode(string $binary): string
     {
         return sodium_bin2base64($binary, SODIUM_BASE64_VARIANT_ORIGINAL);
     }
 
-    public static function constantEncodeNoPadding(string $binary): ?string
+    public static function constantEncodeNoPadding(string $binary): string
     {
         return sodium_bin2base64($binary, SODIUM_BASE64_VARIANT_ORIGINAL_NO_PADDING);
     }
 
-    public static function constantDecode(string $binary): ?string
+    public static function constantDecode(string $binary): string
     {
         return sodium_base642bin($binary, SODIUM_BASE64_VARIANT_ORIGINAL);
     }
 
-    public static function constantUrlEncode(string $binary): ?string
+    public static function constantUrlEncode(string $binary): string
     {
         return sodium_bin2base64($binary, SODIUM_BASE64_VARIANT_URLSAFE);
     }
 
-    public static function constantUrlEncodeNoPadding(string $binary): ?string
+    public static function constantUrlEncodeNoPadding(string $binary): string
     {
         return sodium_bin2base64($binary, SODIUM_BASE64_VARIANT_URLSAFE_NO_PADDING);
     }
 
-    public static function constantUrlDecode(string $binary): ?string
+    public static function constantUrlDecode(string $binary): string
     {
         return sodium_base642bin($binary, SODIUM_BASE64_VARIANT_URLSAFE);
     }
 
-    public static function constantUrlDecodeNoPadding(string $binary): ?string
+    public static function constantUrlDecodeNoPadding(string $binary): string
     {
         return sodium_base642bin($binary, SODIUM_BASE64_VARIANT_URLSAFE_NO_PADDING);
     }

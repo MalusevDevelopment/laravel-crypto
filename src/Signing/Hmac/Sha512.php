@@ -8,14 +8,13 @@ use CodeLieutenant\LaravelCrypto\Contracts\KeyLoader;
 use CodeLieutenant\LaravelCrypto\Contracts\Signing as SigningContract;
 use CodeLieutenant\LaravelCrypto\Signing\Traits\Signing;
 
-final class Sha512 implements SigningContract
+final readonly class Sha512 implements SigningContract
 {
     use Signing;
 
     public function __construct(
-        private readonly KeyLoader $loader,
-    ) {
-    }
+        private KeyLoader $loader,
+    ) {}
 
     public function signRaw(string $data): string
     {

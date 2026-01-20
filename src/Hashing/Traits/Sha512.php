@@ -36,5 +36,4 @@ trait Sha512
 
         return $this->sha512;
     }
-
 }

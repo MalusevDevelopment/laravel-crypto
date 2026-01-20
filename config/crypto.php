@@ -5,7 +5,11 @@ declare(strict_types=1);
 use CodeLieutenant\LaravelCrypto\Encoder\JsonEncoder;
 use CodeLieutenant\LaravelCrypto\Encoder\PhpEncoder;
 use CodeLieutenant\LaravelCrypto\Hashing\Blake2b as Blake2bHash;
+use CodeLieutenant\LaravelCrypto\Hashing\Sha256 as Sha256Hash;
+use CodeLieutenant\LaravelCrypto\Hashing\Sha512 as Sha512Hash;
 use CodeLieutenant\LaravelCrypto\Signing\Hmac\Blake2b as Blake2bHMAC;
+use CodeLieutenant\LaravelCrypto\Signing\Hmac\Sha256 as Sha256HMAC;
+use CodeLieutenant\LaravelCrypto\Signing\Hmac\Sha512 as Sha512HMAC;
 
 return [
     /*
@@ -30,7 +34,7 @@ return [
             ],
             JsonEncoder::class => [
                 'decode_as_array' => true,
-            ]
+            ],
         ],
     ],
 
@@ -56,6 +60,8 @@ return [
                 'key' => env('CRYPTO_BLAKE2B_HASHING_KEY'),
                 'outputLength' => 32,
             ],
+            Sha256Hash::class => [],
+            Sha512Hash::class => [],
         ],
     ],
 
@@ -83,6 +89,8 @@ return [
             Blake2bHMAC::class => [
                 'outputLength' => 32,
             ],
+            Sha256HMAC::class => [],
+            Sha512HMAC::class => [],
         ],
     ],
 ];

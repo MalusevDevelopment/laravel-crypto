@@ -14,20 +14,20 @@ function hash512Encoded(string $value): string
     return hash('sha512', $value);
 }
 
-test('hashing', function () {
-    $hasher = new Sha512();
+test('hashing', function (): void {
+    $hasher = new Sha512;
     expect($hasher->hash('hello world'))->toBe(hash512Encoded('hello world'));
 });
 
-test('hashing raw', function () {
-    $hasher = new Sha512();
+test('hashing raw', function (): void {
+    $hasher = new Sha512;
     expect($hasher->hashRaw('hello world'))->toBe(
         hash512('hello world'),
     );
 });
 
-test('hashing verify', function () {
-    $hasher = new Sha512();
+test('hashing verify', function (): void {
+    $hasher = new Sha512;
 
     $data = 'hello world';
     $hash = hash512Encoded($data);
@@ -38,8 +38,8 @@ test('hashing verify', function () {
         ->toBeFalse();
 });
 
-test('hashing raw verify', function () {
-    $hasher = new Sha512();
+test('hashing raw verify', function (): void {
+    $hasher = new Sha512;
 
     $data = 'hello world';
     $hash = hash512($data);

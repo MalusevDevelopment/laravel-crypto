@@ -10,10 +10,10 @@ use CodeLieutenant\LaravelCrypto\Traits\ConstantTimeCompare;
 
 final class Sha512 implements Hashing
 {
-    use Hash;
     use ConstantTimeCompare;
+    use Hash;
 
-    public const ALGORITHM = 'sha512';
+    public const string ALGORITHM = 'sha512';
 
     public function hash(string $data): string
     {

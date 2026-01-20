@@ -20,11 +20,11 @@ env:
 
 jobs:
   testing:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     strategy:
       matrix:
-        operating-system: ['ubuntu-latest']
-        php-versions: ['8.1', '8.2', '8.3']
+        operating-system: ['ubuntu-24.04']
+        php-versions: ['8.4', '8.5']
         phpts: [true, false]
     env:
       extensions: mbstring, intl, sodium, xsl, zip, pdo, pdo_sqlite, xdebug, curl, igbinary, msgpack

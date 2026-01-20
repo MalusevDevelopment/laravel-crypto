@@ -15,7 +15,7 @@ trait Signing
     {
         return $this->equals(
             $this->signRaw($message),
-            !$decodeSignature ? $hmac : Base64::constantUrlDecodeNoPadding($hmac)
+            $decodeSignature ? Base64::constantUrlDecodeNoPadding($hmac) : $hmac
         );
     }
 
@@ -23,5 +23,4 @@ trait Signing
     {
         return Base64::constantUrlEncodeNoPadding($this->signRaw($data));
     }
-
 }

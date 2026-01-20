@@ -4,21 +4,28 @@ declare(strict_types=1);
 
 namespace CodeLieutenant\LaravelCrypto\Support;
 
-final class Random
+use Random\Randomizer;
+
+final readonly class Random
 {
-    public static function bytes(int $length): ?string
+    public function __construct(
+        private Randomizer $randomizer
+    ) {}
+
+    public function bytes(int $length): string
     {
-        return random_bytes($length);
+        return $this->randomizer->getBytes($length);
     }
 
-    public static function string(int $length): ?string
+    public function string(int $length): string
     {
-        $bufferLength = Base64::encodedLength($length, false);
-        return Base64::urlEncodeNoPadding(random_bytes($bufferLength));
+        return Base64::urlEncodeNoPadding($this->randomizer
+            ->getBytes(Base64::encodedLength($length)),
+        );
     }
 
-    public static function int(int $min = PHP_INT_MIN, int $max = PHP_INT_MAX): ?int
+    public function int(int $min = PHP_INT_MIN, int $max = PHP_INT_MAX): int
     {
-        return random_int($min, $max);
+        return $this->randomizer->getInt($min, $max);
     }
 }

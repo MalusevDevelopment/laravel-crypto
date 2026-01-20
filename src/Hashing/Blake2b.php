@@ -9,18 +9,17 @@ use CodeLieutenant\LaravelCrypto\Hashing\Traits\Hash;
 use CodeLieutenant\LaravelCrypto\Support\Base64;
 use CodeLieutenant\LaravelCrypto\Traits\ConstantTimeCompare;
 
-final class Blake2b implements Hashing
+final readonly class Blake2b implements Hashing
 {
-    use Hash;
     use ConstantTimeCompare;
+    use Hash;
 
-    public const ALGORITHM = 'blake2b';
+    public const string ALGORITHM = 'blake2b';
 
     public function __construct(
-        protected readonly ?string $key = null,
-        protected readonly int $outputLength = 64,
-    ) {
-    }
+        private ?string $key = null,
+        private int $outputLength = 64,
+    ) {}
 
     public function hash(string $data): string
     {

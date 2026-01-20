@@ -1,0 +1,6 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Tests" type="PestRunConfigurationType">
+    <PestRunner configuration_file="$PROJECT_DIR$/phpunit.xml" directory="$PROJECT_DIR$" method="" scope="ConfigurationFile" use_alternative_configuration_file="true" parallel_testing_enabled="true" />
+    <method v="2" />
+  </configuration>
+</component>

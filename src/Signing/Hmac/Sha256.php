@@ -9,14 +9,13 @@ use CodeLieutenant\LaravelCrypto\Contracts\Signing as SigningContract;
 use CodeLieutenant\LaravelCrypto\Signing\Traits\Signing;
 use CodeLieutenant\LaravelCrypto\Support\Base64;
 
-final class Sha256 implements SigningContract
+final readonly class Sha256 implements SigningContract
 {
     use Signing;
 
     public function __construct(
-        private readonly KeyLoader $loader,
-    ) {
-    }
+        private KeyLoader $loader,
+    ) {}
 
     public function signRaw(string $data): string
     {
@@ -26,7 +25,7 @@ final class Sha256 implements SigningContract
     public function verify(string $message, string $hmac, bool $decodeSignature = true): bool
     {
         return sodium_crypto_auth_verify(
-            !$decodeSignature ? $hmac : Base64::constantUrlDecodeNoPadding($hmac),
+            $decodeSignature ? Base64::constantUrlDecodeNoPadding($hmac) : $hmac,
             $message,
             $this->loader->getKey()
         );

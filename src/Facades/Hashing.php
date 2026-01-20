@@ -10,7 +10,6 @@ use Illuminate\Support\Facades\Facade;
 /**
  * Class Hashing
  *
- * @package CodeLieutenant\LaravelCrypto\Facades
  *
  * @method static string hash(string $data)
  * @method static string hashRaw(string $data)

@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace CodeLieutenant\LaravelCrypto\Keys\Generators;
 
-class HmacKeyGenerator extends Blake2BHashingKeyGenerator
+final class HmacKeyGenerator extends HashingKeyGenerator
 {
-    public const ENV = 'CRYPTO_HMAC_KEY';
-    public const CONFIG_KEY_PATH = 'crypto.signing.keys.hmac';
+    protected static string $ENV = 'CRYPTO_HMAC_KEY';
+
+    protected static string $CONFIG_KEY_PATH = 'crypto.signing.keys.hmac';
 }

@@ -11,9 +11,7 @@ class MessagePackEncoder implements Encoder
 {
     public function __construct()
     {
-        if (!extension_loaded('msgpack')) {
-            throw new RuntimeException('msgpack extension is not loaded');
-        }
+        throw_unless(extension_loaded('msgpack'), RuntimeException::class, 'msgpack extension is not loaded');
     }
 
     public function encode(mixed $value): string

@@ -33,5 +33,4 @@ trait Hmac256
 
         return $this->hmac256;
     }
-
 }

@@ -16,16 +16,15 @@ use Illuminate\Contracts\Encryption\EncryptException;
 use Illuminate\Contracts\Encryption\StringEncrypter;
 use Psr\Log\LoggerInterface;
 
-final class XChaCha20Poly1305Encrypter implements Encrypter, StringEncrypter
+final readonly class XChaCha20Poly1305Encrypter implements Encrypter, StringEncrypter
 {
     use Crypto;
 
     public function __construct(
-        private readonly KeyLoader $keyLoader,
-        private readonly Encoder $encoder = new JsonEncoder(),
-        private readonly ?LoggerInterface $logger = null,
-    ) {
-    }
+        private KeyLoader $keyLoader,
+        private Encoder $encoder = new JsonEncoder,
+        private ?LoggerInterface $logger = null,
+    ) {}
 
     public function encrypt($value, $serialize = true): string
     {
@@ -36,19 +35,20 @@ final class XChaCha20Poly1305Encrypter implements Encrypter, StringEncrypter
         try {
             $nonce = $this->generateNonce();
             $encrypted = sodium_crypto_aead_xchacha20poly1305_ietf_encrypt(
-                $value,
+                (string) $value,
                 $nonce,
                 $nonce,
                 $this->keyLoader->getKey()
             );
-            return Base64::constantUrlEncodeNoPadding($nonce . $encrypted);
+
+            return Base64::constantUrlEncodeNoPadding($nonce.$encrypted);
         } catch (Exception $e) {
             $this->logger?->error($e->getMessage(), [
                 'exception' => $e,
                 'value' => $value,
                 'serialize' => $serialize,
             ]);
-            throw new EncryptException('Value cannot be encrypted ' . $e->getMessage());
+            throw new EncryptException('Value cannot be encrypted '.$e->getMessage());
         }
     }
 
@@ -56,7 +56,7 @@ final class XChaCha20Poly1305Encrypter implements Encrypter, StringEncrypter
     {
         $decoded = Base64::constantUrlDecodeNoPadding($payload);
         $nonce = substr($decoded, 0, self::nonceSize());
-        $cipherText = substr($decoded, self::nonceSize(), null);
+        $cipherText = substr($decoded, self::nonceSize());
 
         try {
             $decrypted = sodium_crypto_aead_xchacha20poly1305_ietf_decrypt(

@@ -8,7 +8,7 @@ use CodeLieutenant\LaravelCrypto\Enums\Encryption;
 use Illuminate\Encryption\Encrypter;
 use Illuminate\Support\Facades\Config;
 
-test('encrypter resolver', function (string $cipher, string $instance) {
+test('encrypter resolver', function (string $cipher, string $instance): void {
     Config::set('app.cipher', $cipher);
 
     $encrypter = $this->app->make('encrypter');

@@ -9,9 +9,7 @@ use Illuminate\Support\Str;
 
 class InMemoryAppKeyKeyLoader implements KeyLoader
 {
-    public function __construct(private readonly string $key)
-    {
-    }
+    public function __construct(private readonly string $key) {}
 
     public function getKey(): string|array
     {

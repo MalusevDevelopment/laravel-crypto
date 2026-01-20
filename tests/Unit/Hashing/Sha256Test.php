@@ -14,20 +14,20 @@ function hash256Encoded(string $value): string
     return hash('sha512/256', $value);
 }
 
-test('hashing', function () {
-    $hasher = new Sha256();
+test('hashing', function (): void {
+    $hasher = new Sha256;
     expect($hasher->hash('hello world'))->toBe(hash256Encoded('hello world'));
 });
 
-test('hashing raw', function () {
-    $hasher = new Sha256();
+test('hashing raw', function (): void {
+    $hasher = new Sha256;
     expect($hasher->hashRaw('hello world'))->toBe(
         hash256('hello world'),
     );
 });
 
-test('hashing verify', function () {
-    $hasher = new Sha256();
+test('hashing verify', function (): void {
+    $hasher = new Sha256;
 
     $data = 'hello world';
     $hash = hash256Encoded($data);
@@ -38,8 +38,8 @@ test('hashing verify', function () {
         ->toBeFalse();
 });
 
-test('hashing raw verify', function () {
-    $hasher = new Sha256();
+test('hashing raw verify', function (): void {
+    $hasher = new Sha256;
 
     $data = 'hello world';
     $hash = hash256($data);

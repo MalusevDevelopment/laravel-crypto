@@ -11,9 +11,7 @@ class IgbinaryEncoder implements Encoder
 {
     public function __construct()
     {
-        if (!extension_loaded('igbinary')) {
-            throw new RuntimeException('igbinary extension is not loaded');
-        }
+        throw_unless(extension_loaded('igbinary'), RuntimeException::class, 'igbinary extension is not loaded');
     }
 
     public function encode(mixed $value): string

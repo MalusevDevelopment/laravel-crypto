@@ -9,28 +9,29 @@ use CodeLieutenant\LaravelCrypto\Contracts\PublicKeySigning;
 use CodeLieutenant\LaravelCrypto\Signing\Traits\Signing;
 use CodeLieutenant\LaravelCrypto\Support\Base64;
 
-final class EdDSA implements PublicKeySigning
+final readonly class EdDSA implements PublicKeySigning
 {
     use Signing;
 
     public function __construct(
-        private readonly KeyLoader $loader,
-    ) {
-    }
+        private KeyLoader $loader,
+    ) {}
 
     public function signRaw(string $data): string
     {
         [, $private] = $this->loader->getKey();
+
         return sodium_crypto_sign_detached($data, $private);
     }
 
     public function verify(string $message, string $hmac, bool $decodeSignature = true): bool
     {
         [$public] = $this->loader->getKey();
+
         return sodium_crypto_sign_verify_detached(
-            !$decodeSignature ? $hmac : Base64::urlDecode($hmac),
+            $decodeSignature ? Base64::urlDecode($hmac) : $hmac,
             $message,
-            $public
+            (string) $public
         );
     }
 }

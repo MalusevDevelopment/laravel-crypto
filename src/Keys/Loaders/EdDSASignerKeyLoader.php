@@ -14,43 +14,42 @@ use SplFileObject;
 class EdDSASignerKeyLoader implements KeyLoader
 {
     public const KEY_LENGTH = SODIUM_CRYPTO_SIGN_KEYPAIRBYTES;
+
     public const PUBLIC_KEY_LENGTH = SODIUM_CRYPTO_SIGN_PUBLICKEYBYTES;
+
     public const PRIVATE_KEY_LENGTH = SODIUM_CRYPTO_SIGN_SECRETKEYBYTES;
 
-    private const CONFIG_KEY_PATH = 'crypto.signing.keys.eddsa';
+    private const string CONFIG_KEY_PATH = 'crypto.signing.keys.eddsa';
 
     private static string $privateKey;
-    private static string $publicKey;
 
+    private static string $publicKey;
 
     public static function make(Repository $config, LoggerInterface $logger): static
     {
-        if (!isset(static::$publicKey, static::$privateKey)) {
-            $path = $config->get(static::CONFIG_KEY_PATH);
+        if (! isset(self::$publicKey, self::$privateKey)) {
+            $path = $config->get(self::CONFIG_KEY_PATH);
 
-            if ($path === null) {
-                throw new MissingAppKeyException('File for EdDSA signer is not set');
-            }
+            throw_if($path === null, MissingAppKeyException::class, 'File for EdDSA signer is not set');
 
-            [static::$publicKey, static::$privateKey] = static::parseKeys($path, $logger);
+            [self::$publicKey, self::$privateKey] = static::parseKeys($path, $logger);
         }
 
-        return new static();
+        return new static;
     }
 
+    /**
+     * @return array<int, string|bool>
+     */
     protected static function parseKeys(string $keyPath, LoggerInterface $logger): array
     {
         $file = new SplFileObject($keyPath, 'rb');
-        if ($file->flock(LOCK_SH) === false) {
-            throw new RuntimeException('Error while locking file (shared/reading)');
-        }
+        throw_if($file->flock(LOCK_SH) === false, RuntimeException::class, 'Error while locking file (shared/reading)');
 
         try {
             $keys = $file->fread(self::KEY_LENGTH * 2 + 1);
 
-            if ($keys === false) {
-                throw new RuntimeException('Error while reading key');
-            }
+            throw_if($keys === false, RuntimeException::class, 'Error while reading key');
         } finally {
             if ($file->flock(LOCK_UN) === false) {
                 $logger->warning('Error while unlocking file');
@@ -62,10 +61,11 @@ class EdDSASignerKeyLoader implements KeyLoader
         return [hex2bin($publicKey), hex2bin($privateKey)];
     }
 
+    /**
+     * @return array<int, string>
+     */
     public function getKey(): string|array
     {
         return [self::$publicKey, self::$privateKey];
     }
-
-
 }

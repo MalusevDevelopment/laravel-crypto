@@ -35,16 +35,14 @@ class GenerateCryptoKeysCommand extends Command
         HmacKeyGenerator $hmacKeyGenerator,
     ): int {
         $show = $this->option('show');
-        $eddsa = !$this->option('no-eddsa');
-        $app = !$this->option('no-app');
-        $blake2b = !$this->option('no-blake2b');
-        $hmac = !$this->option('no-hmac');
+        $eddsa = ! $this->option('no-eddsa');
+        $app = ! $this->option('no-app');
+        $blake2b = ! $this->option('no-blake2b');
+        $hmac = ! $this->option('no-hmac');
 
-        $proceed = $this->confirmToProceed('This operation will overwrite existing keys', function () {
-            return $this->getLaravel()->environment() === 'production';
-        });
+        $proceed = $this->confirmToProceed('This operation will overwrite existing keys', fn () => $this->getLaravel()->environment('production'));
 
-        if (!$proceed) {
+        if (! $proceed) {
             return self::FAILURE;
         }
 
@@ -55,7 +53,7 @@ class GenerateCryptoKeysCommand extends Command
                 $eddsaKey = $edDSAGenerator->generate($write);
 
                 if ($show) {
-                    $this->info('EdDSA Key: ' . $eddsaKey);
+                    $this->info('EdDSA Key: '.$eddsaKey);
                 }
             }
 
@@ -63,7 +61,7 @@ class GenerateCryptoKeysCommand extends Command
                 $appKey = $appKeyGenerator->generate($write);
 
                 if ($show) {
-                    $this->info('App Key: ' . $appKey);
+                    $this->info('App Key: '.$appKey);
                 }
             }
 
@@ -71,7 +69,7 @@ class GenerateCryptoKeysCommand extends Command
                 $blake2bKey = $blake2bKeyGenerator->generate($write);
 
                 if ($show) {
-                    $this->info('Blake2b Key: ' . $blake2bKey);
+                    $this->info('Blake2b Key: '.$blake2bKey);
                 }
             }
 
@@ -79,11 +77,12 @@ class GenerateCryptoKeysCommand extends Command
                 $hmacKey = $hmacKeyGenerator->generate($write);
 
                 if ($show) {
-                    $this->info('HMAC Key: ' . $hmacKey);
+                    $this->info('HMAC Key: '.$hmacKey);
                 }
             }
         } catch (Exception $e) {
             $this->error($e->getMessage());
+
             return self::FAILURE;
         }
 

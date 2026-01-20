@@ -30,7 +30,6 @@ trait Blake2b
         return $this->createBlake2bDriver()->verifyRaw($hash, $data);
     }
 
-
     public function createBlake2bDriver(): Blake2bHashing
     {
         if ($this->blake2b === null) {
@@ -39,5 +38,4 @@ trait Blake2b
 
         return $this->blake2b;
     }
-
 }

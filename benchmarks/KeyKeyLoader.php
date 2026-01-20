@@ -10,8 +10,7 @@ class KeyKeyLoader implements KeyLoader
 {
     public function __construct(
         private readonly string $key
-    ) {
-    }
+    ) {}
 
     public function getKey(): string|array
     {

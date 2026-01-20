@@ -20,7 +20,6 @@ trait Hmac512
         return $this->createHmac512Driver()->signRaw($data);
     }
 
-
     public function hmac512Verify(string $message, string $hmac): bool
     {
         return $this->createHmac512Driver()->verify($message, $hmac);

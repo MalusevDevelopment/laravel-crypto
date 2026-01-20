@@ -6,19 +6,19 @@ namespace CodeLieutenant\LaravelCrypto\Keys\Generators;
 
 use CodeLieutenant\LaravelCrypto\Contracts\KeyGenerator;
 use Illuminate\Contracts\Config\Repository;
+use Illuminate\Support\Facades\File;
 use Psr\Log\LoggerInterface;
 use RuntimeException;
 use SplFileObject;
 
-class EdDSASignerKeyGenerator implements KeyGenerator
+final readonly class EdDSASignerKeyGenerator implements KeyGenerator
 {
-    private const CONFIG_KEY_PATH = 'crypto.signing.keys.eddsa';
+    private const string CONFIG_KEY_PATH = 'crypto.signing.keys.eddsa';
 
     public function __construct(
-        private readonly Repository $config,
-        private readonly LoggerInterface $logger,
-    ) {
-    }
+        private Repository $config,
+        private LoggerInterface $logger,
+    ) {}
 
     public function generate(?string $write): ?string
     {
@@ -34,30 +34,16 @@ class EdDSASignerKeyGenerator implements KeyGenerator
 
         $path = $this->config->get(self::CONFIG_KEY_PATH);
 
-        if ($path === null) {
-            throw new RuntimeException('File for EdDSA signer is not set');
-        }
+        throw_if($path === null, RuntimeException::class, 'File for EdDSA signer is not set');
 
-        if (!@file_exists($concurrentDirectory = dirname($path)) && !@mkdir(
-                $concurrentDirectory,
-                0740,
-                true
-            ) && !is_dir(
-                $concurrentDirectory
-            )) {
-            throw new RuntimeException(sprintf('Directory "%s" was not created', $concurrentDirectory));
-        }
+        File::ensureDirectoryExists(dirname($path), mode: 0740);
 
         $file = new SplFileObject($path, 'wb');
 
-        if ($file->flock(LOCK_EX) === false) {
-            throw new RuntimeException('Error while locking file (exclusive/writing)');
-        }
+        throw_if($file->flock(LOCK_EX) === false, RuntimeException::class, 'Error while locking file (exclusive/writing)');
 
         try {
-            if ($file->fwrite($key) === false) {
-                throw new RuntimeException('Error while writing public key to file');
-            }
+            throw_if($file->fwrite($key) === false, RuntimeException::class, 'Error while writing public key to file');
         } finally {
             if ($file->flock(LOCK_UN) === false) {
                 $this->logger->warning('Error while unlocking file');

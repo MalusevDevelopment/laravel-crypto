@@ -13,11 +13,9 @@ trait LaravelKeyParser
     protected static function parseKey(?string $key, bool $allowEmpty = false): string
     {
         if ($key === null || $key === '') {
-            if (!$allowEmpty) {
-                throw new MissingAppKeyException();
-            }
+            throw_unless($allowEmpty, MissingAppKeyException::class);
 
-            return "";
+            return '';
         }
 
         if (str_starts_with($key, $prefix = 'base64:')) {
@@ -26,9 +24,7 @@ trait LaravelKeyParser
 
         $key = hex2bin($key);
 
-        if ($key === false) {
-            throw new RuntimeException('Application encryption key is not a valid hex string.');
-        }
+        throw_if($key === false, RuntimeException::class, 'Application encryption key is not a valid hex string.');
 
         return $key;
     }

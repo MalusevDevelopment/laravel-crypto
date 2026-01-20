@@ -8,15 +8,14 @@ use CodeLieutenant\LaravelCrypto\Contracts\KeyLoader;
 use CodeLieutenant\LaravelCrypto\Contracts\Signing as SigningContract;
 use CodeLieutenant\LaravelCrypto\Signing\Traits\Signing;
 
-final class Blake2b implements SigningContract
+final readonly class Blake2b implements SigningContract
 {
     use Signing;
 
     public function __construct(
-        private readonly KeyLoader $loader,
-        private readonly int $outputSize
-    ) {
-    }
+        private KeyLoader $loader,
+        private int $outputSize
+    ) {}
 
     public function signRaw(string $data): string
     {

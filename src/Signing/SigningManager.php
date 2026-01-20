@@ -4,15 +4,19 @@ declare(strict_types=1);
 
 namespace CodeLieutenant\LaravelCrypto\Signing;
 
-use Illuminate\Support\Manager;
 use CodeLieutenant\LaravelCrypto\Contracts\Signing;
+use CodeLieutenant\LaravelCrypto\Signing\Traits\Blake2b;
+use CodeLieutenant\LaravelCrypto\Signing\Traits\EdDSA;
+use CodeLieutenant\LaravelCrypto\Signing\Traits\Hmac256;
+use CodeLieutenant\LaravelCrypto\Signing\Traits\Hmac512;
+use Illuminate\Support\Manager;
 
 class SigningManager extends Manager implements Signing
 {
-    use Traits\Blake2b;
-    use Traits\Hmac256;
-    use Traits\Hmac512;
-    use Traits\EdDSA;
+    use Blake2b;
+    use EdDSA;
+    use Hmac256;
+    use Hmac512;
 
     public function sign(string $data): string
     {
@@ -33,5 +37,4 @@ class SigningManager extends Manager implements Signing
     {
         return $this->config->get('crypto.signing.driver', 'blake2b');
     }
-
 }

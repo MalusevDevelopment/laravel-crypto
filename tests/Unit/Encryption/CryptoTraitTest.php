@@ -15,8 +15,8 @@ class TestTraitImpl
     }
 }
 
-test('generate nonce -> without previous', function () {
-    $testCrypto = new TestTraitImpl();
+test('generate nonce -> without previous', function (): void {
+    $testCrypto = new TestTraitImpl;
     $nonce = $testCrypto->generateNonce();
     $nonce2 = $testCrypto->generateNonce();
 
@@ -30,8 +30,8 @@ test('generate nonce -> without previous', function () {
         ->and($nonce)->not->toBe($nonce2);
 });
 
-test('generate nonce -> with previous', function () {
-    $testCrypto = new TestTraitImpl();
+test('generate nonce -> with previous', function (): void {
+    $testCrypto = new TestTraitImpl;
     $nonce = $testCrypto->generateNonce();
     $nonce2 = $testCrypto->generateNonce($nonce);
 
@@ -46,8 +46,7 @@ test('generate nonce -> with previous', function () {
         ->and(substr($nonce, 1))->toBe(substr($nonce2, 1));
 });
 
-
-test('supported algorithms', function (int $keyLength, string $cipher) {
+test('supported algorithms', function (int $keyLength, string $cipher): void {
     $key = random_bytes($keyLength);
     expect(TestTraitImpl::supported($key, $cipher))->toBetrue();
 })->with([
@@ -59,7 +58,7 @@ test('supported algorithms', function (int $keyLength, string $cipher) {
     [16, 'AES-128-GCM'],
 ]);
 
-test('not supported algorithms', function (int $keyLength, string $cipher) {
+test('not supported algorithms', function (int $keyLength, string $cipher): void {
     $key = random_bytes($keyLength);
     expect(TestTraitImpl::supported($key, $cipher))->toBeFalse();
 })->with([

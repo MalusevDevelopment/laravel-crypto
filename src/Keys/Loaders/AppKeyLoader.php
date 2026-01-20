@@ -18,11 +18,11 @@ class AppKeyLoader implements KeyLoader
 
     public static function make(Repository $config): static
     {
-        if (!isset(static::$key)) {
+        if (! isset(static::$key)) {
             static::$key = self::parseKey($config->get(static::CONFIG_KEY_PATH));
         }
 
-        return new static();
+        return new static;
     }
 
     public function getKey(): string|array

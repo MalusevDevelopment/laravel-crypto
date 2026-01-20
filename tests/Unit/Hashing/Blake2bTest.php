@@ -18,13 +18,13 @@ function bcryptHashEncoded(string $value, string $key, int $outputLength = 32): 
     );
 }
 
-test('hashing', function () {
+test('hashing', function (): void {
     $outputLength = 32;
     $hasher = new Blake2b(outputLength: $outputLength);
     expect($hasher->hash('hello world'))->toBe(bcryptHashEncoded('hello world', '', $outputLength));
 });
 
-test('hashing raw', function () {
+test('hashing raw', function (): void {
     $outputLength = 32;
     $hasher = new Blake2b(outputLength: $outputLength);
     expect($hasher->hashRaw('hello world'))->toBe(
@@ -32,7 +32,7 @@ test('hashing raw', function () {
     );
 });
 
-test('hashing with key', function () {
+test('hashing with key', function (): void {
     $key = random_bytes(32);
     $outputLength = 32;
     $hasher = new Blake2b($key, $outputLength);
@@ -40,7 +40,7 @@ test('hashing with key', function () {
     expect($hasher->hash('hello world'))->toBe(bcryptHashEncoded('hello world', $key, $outputLength));
 });
 
-test('hashing raw with key', function () {
+test('hashing raw with key', function (): void {
     $key = random_bytes(32);
     $outputLength = 32;
     $hasher = new Blake2b($key, $outputLength);
@@ -48,7 +48,7 @@ test('hashing raw with key', function () {
     expect($hasher->hashRaw('hello world'))->toBe(bcryptHash('hello world', $key, $outputLength));
 });
 
-test('hashing verify', function () {
+test('hashing verify', function (): void {
     $outputLength = 32;
     $hasher = new Blake2b(outputLength: $outputLength);
 
@@ -61,7 +61,7 @@ test('hashing verify', function () {
         ->toBeFalse();
 });
 
-test('hashing raw verify', function () {
+test('hashing raw verify', function (): void {
     $outputLength = 32;
     $hasher = new Blake2b(outputLength: $outputLength);
 

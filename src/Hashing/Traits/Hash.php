@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace CodeLieutenant\LaravelCrypto\Hashing\Traits;
 
-
 trait Hash
 {
-
     public function verify(string $hash, string $data): bool
     {
         return $this->equals($hash, $this->hash($data));

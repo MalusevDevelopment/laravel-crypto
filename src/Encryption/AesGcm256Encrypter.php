@@ -15,19 +15,19 @@ use Illuminate\Contracts\Encryption\Encrypter;
 use Illuminate\Contracts\Encryption\EncryptException;
 use Illuminate\Contracts\Encryption\StringEncrypter;
 use Psr\Log\LoggerInterface;
+use SensitiveParameter;
 
-final class AesGcm256Encrypter implements Encrypter, StringEncrypter
+final readonly class AesGcm256Encrypter implements Encrypter, StringEncrypter
 {
     use Crypto;
 
     public function __construct(
-        private readonly KeyLoader $keyLoader,
-        private readonly Encoder $encoder = new JsonEncoder(),
-        private readonly ?LoggerInterface $logger = null,
-    ) {
-    }
+        private KeyLoader $keyLoader,
+        private Encoder $encoder = new JsonEncoder,
+        private ?LoggerInterface $logger = null,
+    ) {}
 
-    public function encrypt($value, $serialize = true): string
+    public function encrypt(#[SensitiveParameter] $value, $serialize = true): string
     {
         $serialized = match ($serialize) {
             true => $this->encoder->encode($value),
@@ -36,8 +36,9 @@ final class AesGcm256Encrypter implements Encrypter, StringEncrypter
 
         try {
             $nonce = $this->generateNonce();
-            $encrypted = sodium_crypto_aead_aes256gcm_encrypt($serialized, $nonce, $nonce, $this->getKey());
-            return Base64::constantUrlEncodeNoPadding($nonce . $encrypted);
+            $encrypted = sodium_crypto_aead_aes256gcm_encrypt((string) $serialized, $nonce, $nonce, $this->getKey());
+
+            return Base64::constantUrlEncodeNoPadding($nonce.$encrypted);
         } catch (Exception $e) {
             $this->logger?->error($e->getMessage(), [
                 'exception' => $e,

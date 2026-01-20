@@ -36,5 +36,4 @@ trait Sha256
 
         return $this->sha256;
     }
-
 }

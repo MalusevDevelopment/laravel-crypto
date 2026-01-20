@@ -1,96 +1,100 @@
 {
-    "name": "codelieutenant/laravel-crypto",
-    "description": "Laravel Crypto is a package that provides a simple and easy to use API for encrypting, decrypting, hashing, and signing data using the latest PHP and Laravel features.",
-    "type": "library",
-    "license": "MIT",
-    "authors": [
-        {
-            "name": "Dusan Malusev",
-            "email": "dusan@dusanmalusev.dev",
-            "homepage": "https://www.dusanmalusev.dev",
-            "role": "Developer"
-        }
-    ],
-    "keywords": [
-        "laravel",
-        "security",
-        "hashing",
-        "signing",
-        "encryption",
-        "decryption",
-        "crypto",
-        "cryptography",
-        "sodium"
-    ],
-    "minimum-stability": "stable",
-    "require": {
-        "php": ">=8.1",
-        "ext-sodium": "*",
-        "illuminate/collections": "^8|^9|^10|^11",
-        "illuminate/config": "^8|^9|^10|^11",
-        "illuminate/contracts": "^8|^9|^10|^11",
-        "illuminate/encryption": "^8|^9|^10|^11",
-        "illuminate/hashing": "^8|^9|^10|^11",
-        "illuminate/support": "^8|^9|^10|^11"
-    },
-    "require-dev": {
-        "orchestra/testbench": "^8.21",
-        "pestphp/pest": "^2.34",
-        "pestphp/pest-plugin-laravel": "^2.3",
-        "phpbench/phpbench": "^1.2"
-    },
-    "autoload": {
-        "psr-4": {
-            "CodeLieutenant\\LaravelCrypto\\": "src/"
-        }
-    },
-    "autoload-dev": {
-        "psr-4": {
-            "CodeLieutenant\\LaravelCrypto\\Tests\\": "tests/",
-            "CodeLieutenant\\LaravelCrypto\\Benchmarks\\": "benchmarks/",
-            "Workbench\\App\\": "workbench/app/",
-            "Workbench\\Database\\Factories\\": "workbench/database/factories/",
-            "Workbench\\Database\\Seeders\\": "workbench/database/seeders/"
-        }
-    },
-    "suggest": {
-        "ext-json": "Required for Json Serializer",
-        "ext-msgpack": "Required for MessagePack Serializer",
-        "ext-igbinary": "Required for Igbinary Serializer"
-    },
-    "config": {
-        "preferred-install": "dist",
-        "sort-packages": true,
-        "allow-plugins": {
-            "pestphp/pest-plugin": true
-        }
-    },
-    "extra": {
-        "laravel": {
-            "aliases": {
-                "Hashing": "CodeLieutenant\\LaravelCrypto\\Facades\\Hashing",
-                "Signing": "CodeLieutenant\\LaravelCrypto\\Facades\\Sign"
-            }
-        }
-    },
-    "scripts": {
-        "post-autoload-dump": [
-            "@clear",
-            "@prepare"
-        ],
-        "clear": "@php vendor/bin/testbench package:purge-skeleton --ansi",
-        "prepare": "@php vendor/bin/testbench package:discover --ansi",
-        "build": "@php vendor/bin/testbench workbench:build --ansi",
-        "serve": [
-            "Composer\\Config::disableProcessTimeout",
-            "@build",
-            "@php vendor/bin/testbench serve"
-        ],
-        "lint": [
-            "@php vendor/bin/phpstan analyse"
-        ],
-        "test": [
-            "@php vendor/bin/phpunit"
-        ]
+  "name": "codelieutenant/laravel-crypto",
+  "description": "Laravel Crypto is a package that provides a simple and easy to use API for encrypting, decrypting, hashing, and signing data using the latest PHP and Laravel features.",
+  "type": "library",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Dusan Malusev",
+      "email": "dusan@dusanmalusev.dev",
+      "homepage": "https://www.dusanmalusev.dev",
+      "role": "Developer"
     }
+  ],
+  "keywords": [
+    "laravel",
+    "security",
+    "hashing",
+    "signing",
+    "encryption",
+    "decryption",
+    "crypto",
+    "cryptography",
+    "sodium"
+  ],
+  "minimum-stability": "stable",
+  "require": {
+    "php": ">=8.4",
+    "ext-sodium": "*",
+    "illuminate/collections": "^10|^11|^12",
+    "illuminate/config": "^10|^11|^12",
+    "illuminate/contracts": "^10|^11|^12",
+    "illuminate/encryption": "^10|^11|^12",
+    "illuminate/hashing": "^10|^11|^12",
+    "illuminate/support": "^10|^11|^12"
+  },
+  "require-dev": {
+    "driftingly/rector-laravel": "^2.1",
+    "laravel/pint": "^1.27",
+    "orchestra/testbench": "^v10.9.0",
+    "pestphp/pest": "^v4.3.1",
+    "pestphp/pest-plugin-laravel": "^v4.0.0",
+    "phpbench/phpbench": "^1.4.2",
+    "rector/rector": "^2.3"
+  },
+  "autoload": {
+    "psr-4": {
+      "CodeLieutenant\\LaravelCrypto\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "CodeLieutenant\\LaravelCrypto\\Tests\\": "tests/",
+      "CodeLieutenant\\LaravelCrypto\\Benchmarks\\": "benchmarks/",
+      "Workbench\\App\\": "workbench/app/",
+      "Workbench\\Database\\Factories\\": "workbench/database/factories/",
+      "Workbench\\Database\\Seeders\\": "workbench/database/seeders/"
+    }
+  },
+  "suggest": {
+    "ext-json": "Required for Json Serializer",
+    "ext-msgpack": "Required for MessagePack Serializer",
+    "ext-igbinary": "Required for Igbinary Serializer"
+  },
+  "config": {
+    "preferred-install": "dist",
+    "sort-packages": true,
+    "allow-plugins": {
+      "pestphp/pest-plugin": true
+    }
+  },
+  "extra": {
+    "laravel": {
+      "aliases": {
+        "Hashing": "CodeLieutenant\\LaravelCrypto\\Facades\\Hashing",
+        "Signing": "CodeLieutenant\\LaravelCrypto\\Facades\\Sign",
+        "Random": "CodeLieutenant\\LaravelCrypto\\Facades\\Random"
+      }
+    }
+  },
+  "scripts": {
+    "post-autoload-dump": [
+      "@clear",
+      "@prepare"
+    ],
+    "clear": "@php vendor/bin/testbench package:purge-skeleton --ansi",
+    "prepare": "@php vendor/bin/testbench package:discover --ansi",
+    "build": "@php vendor/bin/testbench workbench:build --ansi",
+    "serve": [
+      "Composer\\Config::disableProcessTimeout",
+      "@build",
+      "@php vendor/bin/testbench serve"
+    ],
+    "lint": [
+      "@php vendor/bin/phpstan analyse"
+    ],
+    "test": [
+      "@php vendor/bin/phpunit"
+    ]
+  }
 }

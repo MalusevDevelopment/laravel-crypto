@@ -11,10 +11,15 @@ use Illuminate\Encryption\Encrypter;
 class DecryptionBench
 {
     private Encrypter $laravelEncrypter;
+
     private XChaCha20Poly1305Encrypter $xchacha;
+
     private AesGcm256Encrypter $aes256gcm;
+
     private string $xChaChaData;
+
     private string $aes256GcmData;
+
     private string $laravelData;
 
     public function __construct()
@@ -27,7 +32,6 @@ class DecryptionBench
         $this->laravelData = file_get_contents(__DIR__.'/encrypted-laravel');
         $this->aes256GcmData = file_get_contents(__DIR__.'/encrypted-aes256gcm');
     }
-
 
     public function benchLaravelDecryption(): void
     {

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 use CodeLieutenant\LaravelCrypto\Encoder\IgbinaryEncoder;
 
-test('encode', function () {
-    $encoder = new IgbinaryEncoder();
+test('encode', function (): void {
+    $encoder = new IgbinaryEncoder;
 
     $data = ['name' => 'John Doe', 'age' => 25];
 
@@ -14,9 +14,8 @@ test('encode', function () {
     expect($encoded)->toBe(igbinary_serialize($data));
 });
 
-
-test('decode', function () {
-    $encoder = new IgbinaryEncoder();
+test('decode', function (): void {
+    $encoder = new IgbinaryEncoder;
 
     $data = igbinary_serialize(['name' => 'John Doe', 'age' => 25]);
 

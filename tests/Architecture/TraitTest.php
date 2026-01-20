@@ -13,4 +13,3 @@ arch('hashing traits')
 arch('signing traits')
     ->expect('CodeLieutenant\LaravelCrypto\Signing\Traits')
     ->toBeTraits();
-
