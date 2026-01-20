@@ -103,6 +103,8 @@ final readonly class Encrypter implements EncrypterContract, StringEncrypter
         return match ($encType = Encryption::tryFrom($cipher)) {
             null => LaravelEncrypter::supported($key, $cipher),
             Encryption::SodiumAES256GCM => sodium_crypto_aead_aes256gcm_is_available(),
+            Encryption::SodiumAEGIS256GCM => function_exists('sodium_crypto_aead_aegis256_encrypt') && strlen($key) === $encType->keySize(),
+            Encryption::SodiumAEGIS128LGCM => function_exists('sodium_crypto_aead_aegis128l_encrypt') && strlen($key) === $encType->keySize(),
             default => strlen($key) === $encType->keySize()
         };
     }

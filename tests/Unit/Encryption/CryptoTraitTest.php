@@ -9,7 +9,6 @@ use CodeLieutenant\LaravelCrypto\Enums\Encryption;
 use CodeLieutenant\LaravelCrypto\Traits\Crypto;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Contracts\Encryption\EncryptException;
-use SensitiveParameter;
 
 class TestTraitImpl implements EncrypterProvider
 {

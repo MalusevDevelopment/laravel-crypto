@@ -12,7 +12,7 @@ final readonly class Aegis128LGCMEncrypter implements EncrypterProvider
 {
     public function nonceSize(): int
     {
-        return SODIUM_CRYPTO_AEAD_AEGIS128L_NPUBBYTES;
+        return defined('SODIUM_CRYPTO_AEAD_AEGIS128L_NPUBBYTES') ? SODIUM_CRYPTO_AEAD_AEGIS128L_NPUBBYTES : 16;
     }
 
     public function encrypt(#[SensitiveParameter] string $key, #[SensitiveParameter] mixed $value, string $nonce): string
