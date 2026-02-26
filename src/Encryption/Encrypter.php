@@ -9,27 +9,35 @@ use CodeLieutenant\LaravelCrypto\Contracts\EncrypterProvider;
 use CodeLieutenant\LaravelCrypto\Contracts\KeyLoader;
 use CodeLieutenant\LaravelCrypto\Enums\Encryption;
 use CodeLieutenant\LaravelCrypto\Support\Base64;
+use CodeLieutenant\LaravelCrypto\Support\Random;
 use Exception;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Contracts\Encryption\Encrypter as EncrypterContract;
 use Illuminate\Contracts\Encryption\EncryptException;
 use Illuminate\Contracts\Encryption\StringEncrypter;
 use Illuminate\Encryption\Encrypter as LaravelEncrypter;
+use Illuminate\Support\Traits\Macroable;
 use Psr\Log\LoggerInterface;
+use Random\Randomizer;
 use SensitiveParameter;
+use Throwable;
 
-final readonly class Encrypter implements EncrypterContract, StringEncrypter
+final class Encrypter implements EncrypterContract, StringEncrypter
 {
-    private string $key;
+    use Macroable;
 
-    private int $nonceSize;
+    private readonly string $key;
+
+    private readonly int $nonceSize;
 
     public function __construct(
-        private KeyLoader $keyLoader,
-        private Encoder $encoder,
-        private ?LoggerInterface $logger,
-        private EncrypterProvider $encrypter,
-    ) {
+        private readonly KeyLoader         $keyLoader,
+        private readonly Encoder           $encoder,
+        private readonly ?LoggerInterface  $logger,
+        private readonly EncrypterProvider $encrypter,
+        private readonly Random            $random = new Random(new Randomizer()),
+    )
+    {
         $this->key = $this->keyLoader->getKey();
         $this->nonceSize = $this->encrypter->nonceSize();
     }
@@ -43,9 +51,9 @@ final readonly class Encrypter implements EncrypterContract, StringEncrypter
 
         try {
             $nonce = $this->generateNonce();
-            $encrypted = $this->encrypter->encrypt($this->key, (string) $serialized, $nonce);
+            $encrypted = $this->encrypter->encrypt($this->key, (string)$serialized, $nonce);
 
-            return Base64::urlEncodeNoPadding($nonce.$encrypted);
+            return Base64::urlEncodeNoPadding($nonce . $encrypted);
         } catch (Exception $e) {
             $this->logger?->error($e->getMessage(), [
                 'exception' => $e,
@@ -58,6 +66,7 @@ final readonly class Encrypter implements EncrypterContract, StringEncrypter
     public function decrypt($payload, $unserialize = true)
     {
         $decoded = Base64::urlDecode($payload);
+
         $nonce = substr($decoded, 0, $this->nonceSize);
         $cipherText = substr($decoded, $this->nonceSize);
 
@@ -86,7 +95,7 @@ final readonly class Encrypter implements EncrypterContract, StringEncrypter
                     true => $this->encoder->decode($decrypted),
                     false => $decrypted,
                 };
-            } catch (Exception) {
+            } catch (Throwable) {
                 //
             }
         }
@@ -122,8 +131,31 @@ final readonly class Encrypter implements EncrypterContract, StringEncrypter
 
     public static function supported(string $key, string $cipher): bool
     {
-        return match ($encType = Encryption::tryFrom($cipher)) {
-            null => LaravelEncrypter::supported($key, $cipher),
+        $encType = Encryption::tryFrom($cipher);
+
+        if ($encType === null) {
+            $cipher = strtolower($cipher);
+
+            if ($cipher === 'aes-128-cbc') {
+                return strlen($key) === 16;
+            }
+
+            if ($cipher === 'aes-256-cbc') {
+                return strlen($key) === 32;
+            }
+
+            if ($cipher === 'aes-128-gcm') {
+                return strlen($key) === 16;
+            }
+
+            if ($cipher === 'aes-256-gcm') {
+                return strlen($key) === 32;
+            }
+
+            return false;
+        }
+
+        return match ($encType) {
             Encryption::SodiumAES256GCM => sodium_crypto_aead_aes256gcm_is_available(),
             Encryption::SodiumAEGIS256GCM => function_exists('sodium_crypto_aead_aegis256_encrypt') && strlen($key) === $encType->keySize(),
             Encryption::SodiumAEGIS128LGCM => function_exists('sodium_crypto_aead_aegis128l_encrypt') && strlen($key) === $encType->keySize(),
@@ -141,6 +173,32 @@ final readonly class Encrypter implements EncrypterContract, StringEncrypter
         return $this->decrypt($payload, false);
     }
 
+    public function encryptFile(string $inputFilePath, string $outputFilePath): void
+    {
+        try {
+            $this->encrypter->encryptFile($this->key, $inputFilePath, $outputFilePath);
+        } catch (Throwable $e) {
+            $this->logger?->error($e->getMessage(), [
+                'exception' => $e,
+                'stack' => $e->getTraceAsString(),
+            ]);
+            throw new EncryptException('File cannot be encrypted', previous: $e);
+        }
+    }
+
+    public function decryptFile(string $inputFilePath, string $outputFilePath): void
+    {
+        try {
+            $this->encrypter->decryptFile($this->key, $inputFilePath, $outputFilePath);
+        } catch (Throwable $e) {
+            $this->logger?->error($e->getMessage(), [
+                'exception' => $e,
+                'stack' => $e->getTraceAsString(),
+            ]);
+            throw new DecryptException('File cannot be decrypted', previous: $e);
+        }
+    }
+
     public function generateNonce(?string $previous = null): string
     {
         if ($previous !== null) {
@@ -150,6 +208,6 @@ final readonly class Encrypter implements EncrypterContract, StringEncrypter
             return $copy;
         }
 
-        return random_bytes($this->nonceSize);
+        return $this->random->bytes($this->nonceSize);
     }
 }

@@ -39,6 +39,25 @@ class TestTraitImpl implements EncrypterProvider
         }
     }
 
+    public function encryptFile(#[SensitiveParameter] string $key, string $inputFilePath, string $outputFilePath): void {}
+
+    public function decryptFile(#[SensitiveParameter] string $key, string $inputFilePath, string $outputFilePath): void {}
+
+    public function tagSize(): int
+    {
+        return SODIUM_CRYPTO_AEAD_XCHACHA20POLY1305_IETF_ABYTES;
+    }
+
+    public function encryptChunk(#[SensitiveParameter] string $key, string $chunk, string $nonce): string
+    {
+        return $this->encrypt($key, $chunk, $nonce);
+    }
+
+    public function decryptChunk(#[SensitiveParameter] string $key, string $chunk, string $nonce): string
+    {
+        return (string) $this->decrypt($key, $chunk, $nonce);
+    }
+
     public static function supported(string $key, string $cipher): bool
     {
         return Crypto::supported($key, $cipher);

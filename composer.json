@@ -25,6 +25,7 @@
   "minimum-stability": "stable",
   "require": {
     "php": ">=8.4",
+    "ext-openssl": "*",
     "ext-sodium": "*",
     "illuminate/collections": "^10|^11|^12",
     "illuminate/config": "^10|^11|^12",

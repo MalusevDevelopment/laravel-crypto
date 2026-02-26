@@ -23,8 +23,8 @@ test('encrypter resolver', function (string $cipher, string $instance): void {
 
     expect($encrypter)->toBeInstanceOf($instance);
 })->with([
-    ['AES-256-GCM', Encrypter::class],
-    ['AES-256-CBC', Encrypter::class],
+    ['AES-256-GCM', LibEncrypter::class],
+    ['AES-256-CBC', LibEncrypter::class],
     [Encryption::SodiumAES256GCM->value, LibEncrypter::class],
     [Encryption::SodiumXChaCha20Poly1305->value, LibEncrypter::class],
     [Encryption::SodiumAEGIS128LGCM->value, LibEncrypter::class],

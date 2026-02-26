@@ -18,6 +18,7 @@ use CodeLieutenant\LaravelCrypto\Encryption\Encrypter as LibEncrypter;
 use CodeLieutenant\LaravelCrypto\Encryption\Providers\Aegis128LGCMEncrypter;
 use CodeLieutenant\LaravelCrypto\Encryption\Providers\Aegis256GCMEncrypter;
 use CodeLieutenant\LaravelCrypto\Encryption\Providers\AesGcm256Encrypter;
+use CodeLieutenant\LaravelCrypto\Encryption\Providers\OpenSSLEncrypter;
 use CodeLieutenant\LaravelCrypto\Encryption\Providers\XChaCha20Poly1305Encrypter;
 use CodeLieutenant\LaravelCrypto\Enums\Encryption;
 use CodeLieutenant\LaravelCrypto\Hashing\Blake2b;
@@ -43,6 +44,7 @@ use Illuminate\Contracts\Encryption\Encrypter;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Encryption\Encrypter as LaravelConcreteEncrypter;
 use Illuminate\Encryption\EncryptionServiceProvider;
+use Illuminate\Support\Facades\Crypt;
 use Override;
 use Psr\Log\LoggerInterface;
 use Random\Engine\Secure;
@@ -55,6 +57,16 @@ class ServiceProvider extends EncryptionServiceProvider
         if ($this->app->runningInConsole()) {
             $this->publishes([$this->getConfigPath() => config_path('crypto.php')]);
         }
+
+        Crypt::macro('encryptFile', function (string $inputFilePath, string $outputFilePath): void {
+            /** @var LibEncrypter $this */
+            $this->encryptFile($inputFilePath, $outputFilePath);
+        });
+
+        Crypt::macro('decryptFile', function (string $inputFilePath, string $outputFilePath): void {
+            /** @var LibEncrypter $this */
+            $this->decryptFile($inputFilePath, $outputFilePath);
+        });
     }
 
     #[Override]
@@ -86,7 +98,7 @@ class ServiceProvider extends EncryptionServiceProvider
 
         foreach ($encoders as $encoder) {
             $this->app->singleton($encoder, function (Application $app) use ($encoder): PhpEncoder|JsonEncoder|MessagePackEncoder|IgbinaryEncoder {
-                $config = $app->make(Repository::class)->get('crypto.encoder.config.'.$encoder);
+                $config = $app->make(Repository::class)->get('crypto.encoder.config.' . $encoder);
 
                 return new $encoder(...$config);
             });
@@ -102,21 +114,21 @@ class ServiceProvider extends EncryptionServiceProvider
     {
         $this->app->singleton(
             AppKeyLoader::class,
-            fn (Application $app): AppKeyLoader => AppKeyLoader::make($app->make(Repository::class))
+            fn(Application $app): AppKeyLoader => AppKeyLoader::make($app->make(Repository::class))
         );
         $this->app->singleton(
             Blake2BHashingKeyLoader::class,
-            fn (Application $app): Blake2BHashingKeyLoader => Blake2BHashingKeyLoader::make($app->make(Repository::class))
+            fn(Application $app): Blake2BHashingKeyLoader => Blake2BHashingKeyLoader::make($app->make(Repository::class))
         );
 
         $this->app->singleton(
             HmacKeyLoader::class,
-            fn (Application $app): HmacKeyLoader => HmacKeyLoader::make($app->make(Repository::class))
+            fn(Application $app): HmacKeyLoader => HmacKeyLoader::make($app->make(Repository::class))
         );
 
         $this->app->singleton(
             EdDSASignerKeyLoader::class,
-            fn (Application $app): EdDSASignerKeyLoader => EdDSASignerKeyLoader::make(
+            fn(Application $app): EdDSASignerKeyLoader => EdDSASignerKeyLoader::make(
                 $app->make(Repository::class),
                 $app->make(LoggerInterface::class)
             )
@@ -139,14 +151,14 @@ class ServiceProvider extends EncryptionServiceProvider
 
         foreach ($hmacSigners as $signer) {
             $this->app->singleton($signer, function (Application $app) use ($signer): HmacBlake2b|HmacSha256|HmacSha512 {
-                $config = $app->make(Repository::class)->get('crypto.signing.config.'.$signer);
+                $config = $app->make(Repository::class)->get('crypto.signing.config.' . $signer);
                 $keyLoader = $app->make(HmacKeyLoader::class);
 
                 return $config !== null ? new $signer($keyLoader, $config) : new $signer($keyLoader);
             });
         }
 
-        $this->app->singleton(Signing::class, static fn (Application $app) => $app->make($app->make(Repository::class)->get('crypto.signing.driver')));
+        $this->app->singleton(Signing::class, static fn(Application $app) => $app->make($app->make(Repository::class)->get('crypto.signing.driver')));
 
         $this->app->singleton(PublicKeySigning::class, EdDSA::class);
     }
@@ -161,20 +173,19 @@ class ServiceProvider extends EncryptionServiceProvider
 
         foreach ($hashers as $hasher) {
             $this->app->singleton($hasher, static function (Application $app) use ($hasher): Blake2b|Sha256|Sha512 {
-                $params = $app->make(Repository::class)->get('crypto.hashing.config.'.$hasher);
+                $params = $app->make(Repository::class)->get('crypto.hashing.config.' . $hasher);
 
                 return $params === null ? new $hasher : new $hasher(...$params);
             });
         }
 
-        $this->app->singleton(Hashing::class, static fn (Application $app) => $app->make($app->make(Repository::class)->get('crypto.hashing.driver')));
-
+        $this->app->singleton(Hashing::class, static fn(Application $app) => $app->make($app->make(Repository::class)->get('crypto.hashing.driver')));
         $this->app->singleton(HashingManager::class);
     }
 
     protected function getConfigPath(): string
     {
-        return __DIR__.'/../config/crypto.php';
+        return __DIR__ . '/../config/crypto.php';
     }
 
     #[Override]
@@ -182,32 +193,23 @@ class ServiceProvider extends EncryptionServiceProvider
     {
         $func = static function (Application $app): LaravelConcreteEncrypter|LibEncrypter {
             $cipher = $app->make(Repository::class)->get('app.cipher');
-            $keyLoader = $app->make(AppKeyLoader::class);
-            $enc = Encryption::tryFrom($cipher);
-            if ($enc === null) {
-                $encrypter = new LaravelConcreteEncrypter($keyLoader->getKey(), $cipher);
-                if (method_exists($encrypter, 'previousKeys')) {
-                    $encrypter->previousKeys($keyLoader->getPreviousKeys());
-                }
-
-                return $encrypter;
-            }
-
             return new LibEncrypter(
-                keyLoader: $keyLoader,
+                keyLoader: $app->make(AppKeyLoader::class),
                 encoder: $app->make(Encoder::class),
                 logger: $app->make(LoggerInterface::class),
-                encrypter: $app->make(match ($enc) {
-                    Encryption::SodiumAES256GCM => AesGcm256Encrypter::class,
-                    Encryption::SodiumXChaCha20Poly1305 => XChaCha20Poly1305Encrypter::class,
-                    Encryption::SodiumAEGIS256GCM => Aegis256GCMEncrypter::class,
-                    Encryption::SodiumAEGIS128LGCM => Aegis128LGCMEncrypter::class,
-                }),
+                encrypter: match (Encryption::tryFrom($cipher)) {
+                    Encryption::SodiumAES256GCM => $app->make(AesGcm256Encrypter::class),
+                    Encryption::SodiumXChaCha20Poly1305 => $app->make(XChaCha20Poly1305Encrypter::class),
+                    Encryption::SodiumAEGIS256GCM => $app->make(Aegis256GCMEncrypter::class),
+                    Encryption::SodiumAEGIS128LGCM => $app->make(Aegis128LGCMEncrypter::class),
+                    null => $app->make(OpenSSLEncrypter::class, ['cipher' => $cipher]),
+                },
+                random: $app->make(Random::class),
             );
         };
 
-        $this->app->singleton(Randomizer::class, fn (): Randomizer => new Randomizer(new Secure));
-        $this->app->singleton(Random::class, fn (): Random => new Random($this->app->make(Randomizer::class)));
+        $this->app->singleton(Randomizer::class, fn(): Randomizer => new Randomizer(new Secure));
+        $this->app->singleton(Random::class, fn(): Random => new Random($this->app->make(Randomizer::class)));
         $this->app->singleton(Encrypter::class, $func);
         $this->app->singleton('encrypter', $func);
     }
