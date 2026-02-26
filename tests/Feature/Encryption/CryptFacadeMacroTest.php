@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Crypt;
 
 test('Crypt facade has encryptFile and decryptFile macros', function () {
     expect(Crypt::hasMacro('encryptFile'))->toBeTrue()
@@ -17,11 +17,11 @@ test('Crypt::encryptFile and Crypt::decryptFile work', function (string $cipher)
             'Sodium_AEGIS128LGCM' => 16,
             default => 32,
         };
-        
+
         // Ensure we have a valid key for the cipher
-        Config::set('app.key', 'base64:' . base64_encode(random_bytes($keySize)));
+        Config::set('app.key', 'base64:'.base64_encode(random_bytes($keySize)));
     }
-    
+
     Config::set('app.cipher', $cipher);
 
     $inputFile = tempnam(sys_get_temp_dir(), 'in_macro');
@@ -54,13 +54,13 @@ test('Crypt macros throw EncryptException/DecryptException on failure', function
     $invalidFile = '/path/to/nonexistent/file';
     $outputFile = tempnam(sys_get_temp_dir(), 'out');
 
-    expect(fn() => Crypt::encryptFile($invalidFile, $outputFile))
+    expect(fn () => Crypt::encryptFile($invalidFile, $outputFile))
         ->toThrow(\Illuminate\Contracts\Encryption\EncryptException::class);
 
     $corruptedFile = tempnam(sys_get_temp_dir(), 'corr');
     file_put_contents($corruptedFile, 'corrupted content');
 
-    expect(fn() => Crypt::decryptFile($corruptedFile, $outputFile))
+    expect(fn () => Crypt::decryptFile($corruptedFile, $outputFile))
         ->toThrow(\Illuminate\Contracts\Encryption\DecryptException::class);
 
     unlink($outputFile);

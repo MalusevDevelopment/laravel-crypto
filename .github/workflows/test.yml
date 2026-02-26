@@ -67,7 +67,9 @@ jobs:
           coverage: xdebug
 
       - name: Composer install
-        run: composer install -q --no-ansi --prefer-dist --no-interaction --no-progress
+        run: |
+            cp workbench/.env.example workbench/.env
+            composer install -q --no-ansi --prefer-dist --no-interaction --no-progress
 
       - name: Run Tests
         run: vendor/bin/pest --coverage-clover=coverage.xml --coverage --colors=always --fail-on-risky --fail-on-warning --fail-on-deprecation --strict-coverage

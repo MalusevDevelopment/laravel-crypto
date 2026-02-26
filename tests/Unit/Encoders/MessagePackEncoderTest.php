@@ -5,7 +5,7 @@ declare(strict_types=1);
 use CodeLieutenant\LaravelCrypto\Encoder\MessagePackEncoder;
 
 beforeEach(function (): void {
-    if (!extension_loaded('msgpack')) {
+    if (! extension_loaded('msgpack')) {
         $this->markTestSkipped('msgpack extension is not loaded');
     }
 });

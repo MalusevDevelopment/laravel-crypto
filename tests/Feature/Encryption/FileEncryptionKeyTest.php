@@ -73,7 +73,7 @@ test('it can decrypt files with previous keys', function () {
     $encryptedFile = tempnam(sys_get_temp_dir(), 'enc');
     $decryptedFile = tempnam(sys_get_temp_dir(), 'dec');
 
-    $content = 'Secret content ' . str_repeat('A', 1000);
+    $content = 'Secret content '.str_repeat('A', 1000);
     file_put_contents($inputFile, $content);
 
     // Encrypt with old key by manually creating an encrypter
@@ -82,8 +82,8 @@ test('it can decrypt files with previous keys', function () {
         $oldKeyLoader,
         app(\CodeLieutenant\LaravelCrypto\Contracts\Encoder::class),
         null,
-        new \CodeLieutenant\LaravelCrypto\Encryption\Providers\XChaCha20Poly1305Encrypter(),
-        new \CodeLieutenant\LaravelCrypto\Encryption\File\SecretStreamFileEncrypter()
+        new \CodeLieutenant\LaravelCrypto\Encryption\Providers\XChaCha20Poly1305Encrypter,
+        new \CodeLieutenant\LaravelCrypto\Encryption\File\SecretStreamFileEncrypter
     );
 
     $manualEncrypter->encryptFile($inputFile, $encryptedFile);

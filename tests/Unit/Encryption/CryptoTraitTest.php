@@ -39,7 +39,6 @@ class TestTraitImpl implements EncrypterProvider
         }
     }
 
-
     public function tagSize(): int
     {
         return SODIUM_CRYPTO_AEAD_XCHACHA20POLY1305_IETF_ABYTES;

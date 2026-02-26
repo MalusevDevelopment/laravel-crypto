@@ -74,7 +74,8 @@ return [
     | This option controls the default algorithm that will be used to encrypt
     | files. By default, it uses `SecretStream` from libsodium (XChaChaPoly1305).
     | You can also use `NativeFileEncrypter::class` to use the same algorithm
-    | as the APP encryption.
+    | as the APP encryption or `XSalsaHmacFileEncrypter::class` for
+    | XSalsa20 + HMAC chunked encryption.
     |
     | You can also specify a separate key for file encryption. If not set,
     | it will fallback to `app.key` and `app.previous_keys`.

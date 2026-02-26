@@ -55,7 +55,7 @@ final readonly class AppKeyGenerator implements KeyGenerator
         $newPrevious = $old;
 
         if ($oldPrevious !== null && $oldPrevious !== '') {
-            $newPrevious .= ',' . $oldPrevious;
+            $newPrevious .= ','.$oldPrevious;
         }
 
         $this->config->set(self::CONFIG_KEY_PATH, $new);

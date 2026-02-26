@@ -26,7 +26,7 @@ test('it generates eddsa key pair and returns it if write is null', function ():
 
     $key = $generator->generate(null);
     expect($key)->toContain(PHP_EOL);
-    
+
     $parts = explode(PHP_EOL, $key);
     expect(count($parts))->toBe(2)
         ->and(strlen($parts[0]))->toBe(64) // 32 bytes in hex
@@ -51,16 +51,16 @@ test('it writes eddsa key pair to file', function (): void {
 test('it loads eddsa key pair from file', function (): void {
     $config = $this->app->make(Repository::class);
     $logger = $this->app->make(LoggerInterface::class);
-    
+
     $keyPair = sodium_crypto_sign_keypair();
     $privateKey = bin2hex(sodium_crypto_sign_secretkey($keyPair));
     $publicKey = bin2hex(sodium_crypto_sign_publickey($keyPair));
-    File::put($this->tempKeyFile, $publicKey . PHP_EOL . $privateKey);
+    File::put($this->tempKeyFile, $publicKey.PHP_EOL.$privateKey);
 
     Config::set('crypto.signing.keys.eddsa', $this->tempKeyFile);
 
     $loader = EdDSASignerKeyLoader::make($config, $logger);
-    
+
     [$loadedPublic, $loadedPrivate] = $loader->getKey();
     expect(bin2hex($loadedPublic))->toBe($publicKey)
         ->and(bin2hex($loadedPrivate))->toBe($privateKey);

@@ -12,6 +12,7 @@ use SensitiveParameter;
 final readonly class Aegis256GCMEncrypter implements EncrypterProvider
 {
     use StreamEncryptionTrait;
+
     public function nonceSize(): int
     {
         return defined('SODIUM_CRYPTO_AEAD_AEGIS256_NPUBBYTES') ? SODIUM_CRYPTO_AEAD_AEGIS256_NPUBBYTES : 32;

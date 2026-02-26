@@ -7,7 +7,6 @@ namespace CodeLieutenant\LaravelCrypto\Traits;
 use CodeLieutenant\LaravelCrypto\Contracts\EncrypterProvider;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Contracts\Encryption\EncryptException;
-use RuntimeException;
 use SensitiveParameter;
 use Throwable;
 
@@ -22,14 +21,14 @@ trait StreamEncryptionTrait
         $outputFile = fopen($outputFilePath, 'wb');
 
         try {
-            if (!flock($outputFile, LOCK_EX)) {
+            if (! flock($outputFile, LOCK_EX)) {
                 throw new EncryptException('Failed to acquire lock on output file');
             }
             if ($nonceSize > 0 && fwrite($outputFile, $nonce) === false) {
                 throw new EncryptException('Failed to write nonce to output file');
             }
 
-            while (!feof($inputFile)) {
+            while (! feof($inputFile)) {
                 $chunk = fread($inputFile, EncrypterProvider::CHUNK_SIZE);
                 if ($chunk === false) {
                     throw new EncryptException('Failed to read from input file');
@@ -45,7 +44,7 @@ trait StreamEncryptionTrait
                     sodium_increment($nonce);
                 }
             }
-            if (!fflush($outputFile)) {
+            if (! fflush($outputFile)) {
                 throw new EncryptException('Failed to flush output file');
             }
         } catch (Throwable $e) {
@@ -67,7 +66,7 @@ trait StreamEncryptionTrait
         $outputFile = fopen($outputFilePath, 'wb');
 
         try {
-            if (!flock($outputFile, LOCK_EX)) {
+            if (! flock($outputFile, LOCK_EX)) {
                 throw new DecryptException('Failed to acquire lock on output file');
             }
             $nonce = $nonceSize > 0 ? fread($inputFile, $nonceSize) : '';
@@ -76,7 +75,7 @@ trait StreamEncryptionTrait
                 throw new DecryptException('Invalid nonce');
             }
 
-            while (!feof($inputFile)) {
+            while (! feof($inputFile)) {
                 $readSize = EncrypterProvider::CHUNK_SIZE + $tagSize;
                 $chunk = fread($inputFile, $readSize);
                 if ($chunk === false) {
@@ -101,7 +100,7 @@ trait StreamEncryptionTrait
                     sodium_increment($nonce);
                 }
             }
-            if (!fflush($outputFile)) {
+            if (! fflush($outputFile)) {
                 throw new DecryptException('Failed to flush output file');
             }
         } catch (Throwable $e) {

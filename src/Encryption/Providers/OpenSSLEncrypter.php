@@ -18,7 +18,9 @@ final class OpenSSLEncrypter implements EncrypterProvider
     use StreamEncryptionTrait;
 
     private static int $memoryLimitBytes;
+
     private LaravelEncrypter $laravel;
+
     private readonly bool $isGcm;
 
     public function __construct(
@@ -97,7 +99,7 @@ final class OpenSSLEncrypter implements EncrypterProvider
         $mac = substr($chunk, 0, 16);
         $ciphertext = substr($chunk, 16);
 
-        if (!hash_equals($mac, substr(hash_hmac(EncrypterProvider::HMAC_ALGORITHM, $ciphertext, $key, true), 0, 16))) {
+        if (! hash_equals($mac, substr(hash_hmac(EncrypterProvider::HMAC_ALGORITHM, $ciphertext, $key, true), 0, 16))) {
             throw new DecryptException('Chunk integrity check failed');
         }
 
@@ -111,7 +113,7 @@ final class OpenSSLEncrypter implements EncrypterProvider
 
     private function laravel(string $key): LaravelEncrypter
     {
-        if (!isset($this->laravel)) {
+        if (! isset($this->laravel)) {
             $this->laravel = new LaravelEncrypter($key, strtolower($this->cipher));
         }
 

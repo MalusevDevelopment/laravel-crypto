@@ -3,11 +3,11 @@
 declare(strict_types=1);
 
 use CodeLieutenant\LaravelCrypto\Support\Random;
-use Random\Randomizer;
 use Random\Engine\Secure;
+use Random\Randomizer;
 
 beforeEach(function () {
-    $this->random = new Random(new Randomizer(new Secure()));
+    $this->random = new Random(new Randomizer(new Secure));
 });
 
 test('bytes', function () {

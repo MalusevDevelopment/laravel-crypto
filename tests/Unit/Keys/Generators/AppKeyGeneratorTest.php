@@ -35,8 +35,8 @@ test('it generates and updates previous keys', function (): void {
 
     $envContent = File::get($this->tempEnvFile);
     expect($envContent)->toContain("APP_KEY=$newKey1")
-        ->and($envContent)->toContain("APP_PREVIOUS_KEYS=")
-        ->and($envContent)->not->toContain("APP_PREVIOUS_KEYS=base64");
+        ->and($envContent)->toContain('APP_PREVIOUS_KEYS=')
+        ->and($envContent)->not->toContain('APP_PREVIOUS_KEYS=base64');
 
     // 2. Second generation - old key should move to APP_PREVIOUS_KEYS
     $generator->generate($this->tempEnvFile);

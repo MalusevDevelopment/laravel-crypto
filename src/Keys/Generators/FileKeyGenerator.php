@@ -7,6 +7,7 @@ namespace CodeLieutenant\LaravelCrypto\Keys\Generators;
 use CodeLieutenant\LaravelCrypto\Contracts\KeyGenerator;
 use CodeLieutenant\LaravelCrypto\Encryption\File\NativeFileEncrypter;
 use CodeLieutenant\LaravelCrypto\Encryption\File\SecretStreamFileEncrypter;
+use CodeLieutenant\LaravelCrypto\Encryption\File\XSalsaHmacFileEncrypter;
 use CodeLieutenant\LaravelCrypto\Enums\Encryption;
 use CodeLieutenant\LaravelCrypto\Traits\EnvKeySaver;
 use Illuminate\Contracts\Config\Repository as Config;
@@ -17,6 +18,7 @@ final readonly class FileKeyGenerator implements KeyGenerator
     use EnvKeySaver;
 
     public const string ENV = 'CRYPTO_FILE_ENCRYPTION_KEY';
+
     public const string ENV_PREVIOUS = 'CRYPTO_FILE_ENCRYPTION_PREVIOUS_KEYS';
 
     public function __construct(private Config $config) {}
@@ -31,6 +33,7 @@ final readonly class FileKeyGenerator implements KeyGenerator
         $new = $this->formatKey(
             match ($driver) {
                 SecretStreamFileEncrypter::class, 'secretstream' => sodium_crypto_secretstream_xchacha20poly1305_keygen(),
+                XSalsaHmacFileEncrypter::class, 'xsalsa-hmac' => sodium_crypto_stream_keygen(),
                 NativeFileEncrypter::class, 'native' => match (Encryption::tryFrom($this->config->get('app.cipher'))) {
                     Encryption::SodiumAES256GCM => sodium_crypto_aead_aes256gcm_keygen(),
                     Encryption::SodiumXChaCha20Poly1305 => sodium_crypto_aead_xchacha20poly1305_ietf_keygen(),
@@ -49,7 +52,7 @@ final readonly class FileKeyGenerator implements KeyGenerator
 
         $newPrevious = $old;
         if ($oldPrevious !== null && $oldPrevious !== '') {
-            $newPrevious .= ',' . $oldPrevious;
+            $newPrevious .= ','.$oldPrevious;
         }
 
         $this->config->set('crypto.file_encryption.key', $new);

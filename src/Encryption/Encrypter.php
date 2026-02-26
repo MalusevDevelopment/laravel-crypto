@@ -16,7 +16,6 @@ use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Contracts\Encryption\Encrypter as EncrypterContract;
 use Illuminate\Contracts\Encryption\EncryptException;
 use Illuminate\Contracts\Encryption\StringEncrypter;
-use Illuminate\Encryption\Encrypter as LaravelEncrypter;
 use Illuminate\Support\Traits\Macroable;
 use Psr\Log\LoggerInterface;
 use Random\Randomizer;
@@ -32,16 +31,15 @@ final class Encrypter implements EncrypterContract, StringEncrypter
     protected readonly int $nonceSize;
 
     public function __construct(
-        protected readonly KeyLoader         $keyLoader,
-        protected readonly Encoder           $encoder,
-        protected readonly ?LoggerInterface  $logger,
+        protected readonly KeyLoader $keyLoader,
+        protected readonly Encoder $encoder,
+        protected readonly ?LoggerInterface $logger,
         protected readonly EncrypterProvider $encrypter,
-        protected readonly ?FileEncrypter    $fileEncrypter = null,
-        protected readonly Random            $random = new Random(new Randomizer()),
-        protected readonly ?KeyLoader        $fileKeyLoader = null,
-    )
-    {
-        $this->key = (string)$this->keyLoader->getKey();
+        protected readonly ?FileEncrypter $fileEncrypter = null,
+        protected readonly Random $random = new Random(new Randomizer),
+        protected readonly ?KeyLoader $fileKeyLoader = null,
+    ) {
+        $this->key = (string) $this->keyLoader->getKey();
         $this->nonceSize = $this->encrypter->nonceSize();
     }
 
@@ -54,9 +52,9 @@ final class Encrypter implements EncrypterContract, StringEncrypter
 
         try {
             $nonce = $this->generateNonce();
-            $encrypted = $this->encrypter->encrypt($this->key, (string)$serialized, $nonce);
+            $encrypted = $this->encrypter->encrypt($this->key, (string) $serialized, $nonce);
 
-            return Base64::urlEncodeNoPadding($nonce . $encrypted);
+            return Base64::urlEncodeNoPadding($nonce.$encrypted);
         } catch (Exception $e) {
             $this->logger?->error($e->getMessage(), [
                 'exception' => $e,
@@ -118,7 +116,7 @@ final class Encrypter implements EncrypterContract, StringEncrypter
 
     public function getFileKey(): string
     {
-        return (string)($this->fileKeyLoader ?? $this->keyLoader)->getKey();
+        return (string) ($this->fileKeyLoader ?? $this->keyLoader)->getKey();
     }
 
     /**

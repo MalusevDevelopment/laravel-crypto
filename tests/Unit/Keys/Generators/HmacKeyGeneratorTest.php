@@ -49,8 +49,8 @@ test('it returns new hmac key when write is null', function (): void {
 
 test('it loads hmac key', function (): void {
     Config::set('crypto.signing.keys.hmac', 'base64:'.base64_encode('test-key'));
-    
+
     $loader = HmacKeyLoader::make($this->app->make(Repository::class));
-    
+
     expect($loader->getKey())->toBe('test-key');
 });

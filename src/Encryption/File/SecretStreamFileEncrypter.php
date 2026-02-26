@@ -22,14 +22,14 @@ final readonly class SecretStreamFileEncrypter implements FileEncrypter
         $outputFile = fopen($outputFilePath, 'wb');
 
         try {
-            if (!flock($outputFile, LOCK_EX)) {
+            if (! flock($outputFile, LOCK_EX)) {
                 throw new EncryptException('Failed to acquire lock on output file');
             }
             if (fwrite($outputFile, $header) === false) {
                 throw new EncryptException('Failed to write header to output file');
             }
 
-            while (!feof($inputFile)) {
+            while (! feof($inputFile)) {
                 $chunk = fread($inputFile, EncrypterProvider::CHUNK_SIZE);
                 if ($chunk === false) {
                     throw new EncryptException('Failed to read from input file');
@@ -46,7 +46,7 @@ final readonly class SecretStreamFileEncrypter implements FileEncrypter
                     throw new EncryptException('Failed to write to output file');
                 }
             }
-            if (!fflush($outputFile)) {
+            if (! fflush($outputFile)) {
                 throw new EncryptException('Failed to flush output file');
             }
         } catch (Throwable $e) {
@@ -66,7 +66,7 @@ final readonly class SecretStreamFileEncrypter implements FileEncrypter
         $outputFile = fopen($outputFilePath, 'wb');
 
         try {
-            if (!flock($outputFile, LOCK_EX)) {
+            if (! flock($outputFile, LOCK_EX)) {
                 throw new DecryptException('Failed to acquire lock on output file');
             }
             $header = fread($inputFile, SODIUM_CRYPTO_SECRETSTREAM_XCHACHA20POLY1305_HEADERBYTES);
@@ -82,7 +82,7 @@ final readonly class SecretStreamFileEncrypter implements FileEncrypter
             }
 
             try {
-                while (!feof($inputFile)) {
+                while (! feof($inputFile)) {
                     $chunk = fread($inputFile, EncrypterProvider::CHUNK_SIZE + SODIUM_CRYPTO_SECRETSTREAM_XCHACHA20POLY1305_ABYTES);
                     if ($chunk === false) {
                         throw new DecryptException('Failed to read from input file');
@@ -100,7 +100,7 @@ final readonly class SecretStreamFileEncrypter implements FileEncrypter
 
                     $eof = feof($inputFile);
                     if ($tag === SODIUM_CRYPTO_SECRETSTREAM_XCHACHA20POLY1305_TAG_FINAL) {
-                        if (!$eof) {
+                        if (! $eof) {
                             // Check if there is anything else in the file.
                             // fread might have reached EOF, but feof only returns true after a read PAST EOF.
                             // But here we might have more data.
@@ -117,7 +117,7 @@ final readonly class SecretStreamFileEncrypter implements FileEncrypter
                         throw new DecryptException('Failed to write to output file');
                     }
                 }
-                if (!fflush($outputFile)) {
+                if (! fflush($outputFile)) {
                     throw new DecryptException('Failed to flush output file');
                 }
             } finally {

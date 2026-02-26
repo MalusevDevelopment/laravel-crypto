@@ -50,8 +50,8 @@ test('it returns new blake2b key when write is null', function (): void {
 
 test('it loads blake2b key', function (): void {
     Config::set('crypto.hashing.config.blake2b.key', 'base64:'.base64_encode('test-key'));
-    
+
     $loader = Blake2BHashingKeyLoader::make($this->app->make(Repository::class));
-    
+
     expect($loader->getKey())->toBe('test-key');
 });

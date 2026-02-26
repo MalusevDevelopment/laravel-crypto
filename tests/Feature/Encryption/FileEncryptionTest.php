@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CodeLieutenant\LaravelCrypto\Contracts\EncrypterProvider;
 use CodeLieutenant\LaravelCrypto\Encoder\JsonEncoder;
 use CodeLieutenant\LaravelCrypto\Encryption\Encrypter;
 use CodeLieutenant\LaravelCrypto\Encryption\File\NativeFileEncrypter;
@@ -12,27 +13,26 @@ use CodeLieutenant\LaravelCrypto\Encryption\Providers\AesGcm256Encrypter;
 use CodeLieutenant\LaravelCrypto\Encryption\Providers\OpenSSLEncrypter;
 use CodeLieutenant\LaravelCrypto\Encryption\Providers\SecretBoxEncrypter;
 use CodeLieutenant\LaravelCrypto\Encryption\Providers\XChaCha20Poly1305Encrypter;
-use CodeLieutenant\LaravelCrypto\Contracts\EncrypterProvider;
 
 it('should encrypt/decrypt files', function (string|EncrypterProvider $provider, int $keySize): void {
-    if ($provider === AesGcm256Encrypter::class && !sodium_crypto_aead_aes256gcm_is_available()) {
+    if ($provider === AesGcm256Encrypter::class && ! sodium_crypto_aead_aes256gcm_is_available()) {
         $this->markTestSkipped('AES-256-GCM is not supported on this platform.');
     }
 
-    if ($provider === Aegis128LGCMEncrypter::class && !function_exists('sodium_crypto_aead_aegis128l_encrypt')) {
+    if ($provider === Aegis128LGCMEncrypter::class && ! function_exists('sodium_crypto_aead_aegis128l_encrypt')) {
         $this->markTestSkipped('AEGIS-128L is not supported on this platform.');
     }
 
-    if ($provider === Aegis256GCMEncrypter::class && !function_exists('sodium_crypto_aead_aegis256_encrypt')) {
+    if ($provider === Aegis256GCMEncrypter::class && ! function_exists('sodium_crypto_aead_aegis256_encrypt')) {
         $this->markTestSkipped('AEGIS-256 is not supported on this platform.');
     }
 
-    $providerInstance = is_string($provider) && !class_exists($provider)
+    $providerInstance = is_string($provider) && ! class_exists($provider)
         ? new OpenSSLEncrypter(app(CodeLieutenant\LaravelCrypto\Support\Random::class), $provider)
         : (is_string($provider) ? new $provider : $provider);
 
     $encryptor = new Encrypter(inMemoryKeyLoader($keySize), new JsonEncoder, null, $providerInstance, match ($provider) {
-        XChaCha20Poly1305Encrypter::class => new SecretStreamFileEncrypter(),
+        XChaCha20Poly1305Encrypter::class => new SecretStreamFileEncrypter,
         default => new NativeFileEncrypter($providerInstance),
     });
 
@@ -40,7 +40,7 @@ it('should encrypt/decrypt files', function (string|EncrypterProvider $provider,
     $encryptedFile = tempnam(sys_get_temp_dir(), 'enc');
     $decryptedFile = tempnam(sys_get_temp_dir(), 'dec');
 
-    $content = 'Hello, this is a test file content. ' . str_repeat('A', 10000);
+    $content = 'Hello, this is a test file content. '.str_repeat('A', 10000);
     file_put_contents($inputFile, $content);
 
     $encryptor->encryptFile($inputFile, $encryptedFile);
@@ -67,24 +67,24 @@ it('should encrypt/decrypt files', function (string|EncrypterProvider $provider,
 ]);
 
 it('should handle empty files', function (string|EncrypterProvider $provider, int $keySize): void {
-    if ($provider === AesGcm256Encrypter::class && !sodium_crypto_aead_aes256gcm_is_available()) {
+    if ($provider === AesGcm256Encrypter::class && ! sodium_crypto_aead_aes256gcm_is_available()) {
         $this->markTestSkipped('AES-256-GCM is not supported on this platform.');
     }
 
-    if ($provider === Aegis128LGCMEncrypter::class && !function_exists('sodium_crypto_aead_aegis128l_encrypt')) {
+    if ($provider === Aegis128LGCMEncrypter::class && ! function_exists('sodium_crypto_aead_aegis128l_encrypt')) {
         $this->markTestSkipped('AEGIS-128L is not supported on this platform.');
     }
 
-    if ($provider === Aegis256GCMEncrypter::class && !function_exists('sodium_crypto_aead_aegis256_encrypt')) {
+    if ($provider === Aegis256GCMEncrypter::class && ! function_exists('sodium_crypto_aead_aegis256_encrypt')) {
         $this->markTestSkipped('AEGIS-256 is not supported on this platform.');
     }
 
-    $providerInstance = is_string($provider) && !class_exists($provider)
+    $providerInstance = is_string($provider) && ! class_exists($provider)
         ? new OpenSSLEncrypter(app(CodeLieutenant\LaravelCrypto\Support\Random::class), $provider)
         : (is_string($provider) ? new $provider : $provider);
 
     $encryptor = new Encrypter(inMemoryKeyLoader($keySize), new JsonEncoder, null, $providerInstance, match ($provider) {
-        XChaCha20Poly1305Encrypter::class => new SecretStreamFileEncrypter(),
+        XChaCha20Poly1305Encrypter::class => new SecretStreamFileEncrypter,
         default => new NativeFileEncrypter($providerInstance),
     });
 
@@ -117,24 +117,24 @@ it('should handle empty files', function (string|EncrypterProvider $provider, in
 ]);
 
 it('should throw DecryptException on corrupted file', function (string|EncrypterProvider $provider, int $keySize): void {
-    if ($provider === AesGcm256Encrypter::class && !sodium_crypto_aead_aes256gcm_is_available()) {
+    if ($provider === AesGcm256Encrypter::class && ! sodium_crypto_aead_aes256gcm_is_available()) {
         $this->markTestSkipped('AES-256-GCM is not supported on this platform.');
     }
 
-    if ($provider === Aegis128LGCMEncrypter::class && !function_exists('sodium_crypto_aead_aegis128l_encrypt')) {
+    if ($provider === Aegis128LGCMEncrypter::class && ! function_exists('sodium_crypto_aead_aegis128l_encrypt')) {
         $this->markTestSkipped('AEGIS-128L is not supported on this platform.');
     }
 
-    if ($provider === Aegis256GCMEncrypter::class && !function_exists('sodium_crypto_aead_aegis256_encrypt')) {
+    if ($provider === Aegis256GCMEncrypter::class && ! function_exists('sodium_crypto_aead_aegis256_encrypt')) {
         $this->markTestSkipped('AEGIS-256 is not supported on this platform.');
     }
 
-    $providerInstance = is_string($provider) && !class_exists($provider)
+    $providerInstance = is_string($provider) && ! class_exists($provider)
         ? new OpenSSLEncrypter(app(CodeLieutenant\LaravelCrypto\Support\Random::class), $provider)
         : (is_string($provider) ? new $provider : $provider);
 
     $encryptor = new Encrypter(inMemoryKeyLoader($keySize), new JsonEncoder, null, $providerInstance, match ($provider) {
-        XChaCha20Poly1305Encrypter::class => new SecretStreamFileEncrypter(),
+        XChaCha20Poly1305Encrypter::class => new SecretStreamFileEncrypter,
         default => new NativeFileEncrypter($providerInstance),
     });
 
@@ -150,7 +150,7 @@ it('should throw DecryptException on corrupted file', function (string|Encrypter
     $content[strlen($content) - 10] = $content[strlen($content) - 10] ^ "\xFF";
     file_put_contents($encryptedFile, $content);
 
-    expect(fn() => $encryptor->decryptFile($encryptedFile, $decryptedFile))
+    expect(fn () => $encryptor->decryptFile($encryptedFile, $decryptedFile))
         ->toThrow(\Illuminate\Contracts\Encryption\DecryptException::class);
 
     unlink($inputFile);
@@ -176,7 +176,7 @@ it('should throw DecryptException on invalid header for XChaCha20Poly1305', func
 
     file_put_contents($encryptedFile, str_repeat('A', 23)); // 1 byte too short
 
-    expect(fn() => $encryptor->decryptFile($encryptedFile, $decryptedFile))
+    expect(fn () => $encryptor->decryptFile($encryptedFile, $decryptedFile))
         ->toThrow(\Illuminate\Contracts\Encryption\DecryptException::class);
 
     unlink($encryptedFile);
@@ -189,9 +189,9 @@ it('should throw DecryptException on invalid chunk for OpenSSL', function () {
     $encryptedFile = tempnam(sys_get_temp_dir(), 'enc_invalid');
     $decryptedFile = tempnam(sys_get_temp_dir(), 'dec_invalid');
 
-    file_put_contents($encryptedFile, "This is not a valid laravel encrypted payload for a chunk");
+    file_put_contents($encryptedFile, 'This is not a valid laravel encrypted payload for a chunk');
 
-    expect(fn() => $encryptor->decryptFile($encryptedFile, $decryptedFile))
+    expect(fn () => $encryptor->decryptFile($encryptedFile, $decryptedFile))
         ->toThrow(\Illuminate\Contracts\Encryption\DecryptException::class);
 
     unlink($encryptedFile);
@@ -211,7 +211,7 @@ it('should throw DecryptException on invalid key for XChaCha20Poly1305', functio
     // Use a different key for decryption
     $otherEncryptor = new Encrypter(inMemoryKeyLoader(32), new JsonEncoder, null, new XChaCha20Poly1305Encrypter, new SecretStreamFileEncrypter);
 
-    expect(fn() => $otherEncryptor->decryptFile($encryptedFile, $decryptedFile))
+    expect(fn () => $otherEncryptor->decryptFile($encryptedFile, $decryptedFile))
         ->toThrow(\Illuminate\Contracts\Encryption\DecryptException::class);
 
     unlink($inputFile);
@@ -234,7 +234,7 @@ it('should throw DecryptException on corrupted chunk for XChaCha20Poly1305', fun
     $content[30] = $content[30] ^ "\xFF";
     file_put_contents($encryptedFile, $content);
 
-    expect(fn() => $encryptor->decryptFile($encryptedFile, $decryptedFile))
+    expect(fn () => $encryptor->decryptFile($encryptedFile, $decryptedFile))
         ->toThrow(\Illuminate\Contracts\Encryption\DecryptException::class);
 
     unlink($inputFile);
@@ -250,7 +250,7 @@ it('should throw DecryptException on invalid nonce for other providers', functio
 
     file_put_contents($encryptedFile, str_repeat('A', 11)); // 1 byte too short for AES-GCM (12 bytes)
 
-    expect(fn() => $encryptor->decryptFile($encryptedFile, $decryptedFile))
+    expect(fn () => $encryptor->decryptFile($encryptedFile, $decryptedFile))
         ->toThrow(\Illuminate\Contracts\Encryption\DecryptException::class);
 
     unlink($encryptedFile);

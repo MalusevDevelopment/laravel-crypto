@@ -9,7 +9,9 @@ use SensitiveParameter;
 interface EncrypterProvider
 {
     public const int CHUNK_SIZE = 8192;
+
     public const int HMAC_SIZE = 32;
+
     public const string HMAC_ALGORITHM = 'sha512/256';
 
     public function nonceSize(): int;

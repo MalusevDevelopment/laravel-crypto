@@ -13,9 +13,7 @@ final readonly class NativeFileEncrypter implements FileEncrypter
 {
     use StreamEncryptionTrait;
 
-    public function __construct(private EncrypterProvider $provider)
-    {
-    }
+    public function __construct(private EncrypterProvider $provider) {}
 
     public function nonceSize(): int
     {
