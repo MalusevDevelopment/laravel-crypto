@@ -43,6 +43,7 @@ final readonly class AppKeyGenerator implements KeyGenerator
                 Encryption::SodiumXChaCha20Poly1305 => sodium_crypto_aead_xchacha20poly1305_ietf_keygen(),
                 Encryption::SodiumAEGIS256GCM => sodium_crypto_aead_aegis256_keygen(),
                 Encryption::SodiumAEGIS128LGCM => sodium_crypto_aead_aegis128l_keygen(),
+                Encryption::SodiumSecretBox => sodium_crypto_secretbox_keygen(),
                 null => Encrypter::generateKey($cipher),
             }
         );

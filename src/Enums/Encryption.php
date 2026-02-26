@@ -10,6 +10,7 @@ enum Encryption: string
     case SodiumXChaCha20Poly1305 = 'Sodium_XChaCha20Poly1305';
     case SodiumAEGIS256GCM = 'Sodium_AEGIS256GCM';
     case SodiumAEGIS128LGCM = 'Sodium_AEGIS128LGCM';
+    case SodiumSecretBox = 'Sodium_SecretBox';
 
     public function keySize(): int
     {
@@ -18,6 +19,7 @@ enum Encryption: string
             self::SodiumAEGIS256GCM => defined('SODIUM_CRYPTO_AEAD_AEGIS256_KEYBYTES') ? SODIUM_CRYPTO_AEAD_AEGIS256_KEYBYTES : 32,
             self::SodiumAEGIS128LGCM => defined('SODIUM_CRYPTO_AEAD_AEGIS128L_KEYBYTES') ? SODIUM_CRYPTO_AEAD_AEGIS128L_KEYBYTES : 16,
             self::SodiumXChaCha20Poly1305 => SODIUM_CRYPTO_AEAD_XCHACHA20POLY1305_IETF_KEYBYTES,
+            self::SodiumSecretBox => SODIUM_CRYPTO_SECRETBOX_KEYBYTES,
         };
     }
 }

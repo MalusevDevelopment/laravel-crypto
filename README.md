@@ -9,7 +9,7 @@ Laravel Crypto provides a simple and easy-to-use API for encrypting, decrypting,
 
 ## Why Laravel Crypto?
 
-- **Modern Algorithms**: Support for XChaCha20-Poly1305, AES-256-GCM, Blake2b, and EdDSA.
+- **Modern Algorithms**: Support for XChaCha20-Poly1305, AES-256-GCM, XSalsa20-Poly1305, Blake2b, and EdDSA.
 - **Performance**: High-performance cryptographic operations utilizing hardware acceleration where available.
 - **Drop-in Replacement**: Seamlessly replaces Laravel's default `EncryptionServiceProvider`.
 - **Comprehensive**: Includes support for hashing, signing (symmetric and asymmetric), and various data encoders (JSON, MessagePack, Igbinary).
@@ -68,7 +68,7 @@ php artisan vendor:publish --provider="CodeLieutenant\LaravelCrypto\ServiceProvi
 Update your `cipher` in `config/app.php`:
 
 ```php
-'cipher' => 'Sodium_AES256GCM', // Options: Sodium_AES256GCM, Sodium_XChaCha20Poly1305, Sodium_AEGIS256GCM, Sodium_AEGIS128LGCM
+'cipher' => 'Sodium_AES256GCM', // Options: Sodium_AES256GCM, Sodium_XChaCha20Poly1305, Sodium_AEGIS256GCM, Sodium_AEGIS128LGCM, Sodium_SecretBox
 ```
 
 ### 4. Generating Keys

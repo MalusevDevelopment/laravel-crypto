@@ -10,6 +10,7 @@ use CodeLieutenant\LaravelCrypto\Encryption\Providers\Aegis128LGCMEncrypter;
 use CodeLieutenant\LaravelCrypto\Encryption\Providers\Aegis256GCMEncrypter;
 use CodeLieutenant\LaravelCrypto\Encryption\Providers\AesGcm256Encrypter;
 use CodeLieutenant\LaravelCrypto\Encryption\Providers\OpenSSLEncrypter;
+use CodeLieutenant\LaravelCrypto\Encryption\Providers\SecretBoxEncrypter;
 use CodeLieutenant\LaravelCrypto\Encryption\Providers\XChaCha20Poly1305Encrypter;
 use CodeLieutenant\LaravelCrypto\Contracts\EncrypterProvider;
 
@@ -55,6 +56,7 @@ it('should encrypt/decrypt files', function (string|EncrypterProvider $provider,
     unlink($decryptedFile);
 })->with([
     [XChaCha20Poly1305Encrypter::class, 32],
+    [SecretBoxEncrypter::class, 32],
     [AesGcm256Encrypter::class, 32],
     [Aegis128LGCMEncrypter::class, 16],
     [Aegis256GCMEncrypter::class, 32],
@@ -104,6 +106,7 @@ it('should handle empty files', function (string|EncrypterProvider $provider, in
     unlink($decryptedFile);
 })->with([
     [XChaCha20Poly1305Encrypter::class, 32],
+    [SecretBoxEncrypter::class, 32],
     [AesGcm256Encrypter::class, 32],
     [Aegis128LGCMEncrypter::class, 16],
     [Aegis256GCMEncrypter::class, 32],
@@ -155,6 +158,7 @@ it('should throw DecryptException on corrupted file', function (string|Encrypter
     unlink($decryptedFile);
 })->with([
     [XChaCha20Poly1305Encrypter::class, 32],
+    [SecretBoxEncrypter::class, 32],
     [AesGcm256Encrypter::class, 32],
     [Aegis128LGCMEncrypter::class, 16],
     [Aegis256GCMEncrypter::class, 32],

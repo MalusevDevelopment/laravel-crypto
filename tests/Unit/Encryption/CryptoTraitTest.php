@@ -108,6 +108,7 @@ test('supported algorithms', function (int $keyLength, string $cipher): void {
 })->with([
     [Encryption::SodiumAES256GCM->keySize(), Encryption::SodiumAES256GCM->value],
     [Encryption::SodiumXChaCha20Poly1305->keySize(), Encryption::SodiumXChaCha20Poly1305->value],
+    [Encryption::SodiumSecretBox->keySize(), Encryption::SodiumSecretBox->value],
     [32, 'AES-256-GCM'],
     [32, 'AES-256-CBC'],
     [16, 'AES-128-CBC'],

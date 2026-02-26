@@ -8,13 +8,14 @@ The package supports the following Sodium ciphers:
 
 - `Sodium_AES256GCM`: AES-256-GCM using hardware acceleration (if available).
 - `Sodium_XChaCha20Poly1305`: XChaCha20-Poly1305, a modern and high-performance cipher.
+- `Sodium_SecretBox`: XSalsa20-Poly1305 (libsodium secretbox).
 
 ## Configuration
 
 To use these ciphers, update your `config/app.php` file:
 
 ```php
-'cipher' => 'Sodium_AES256GCM', // or 'Sodium_XChaCha20Poly1305'
+'cipher' => 'Sodium_AES256GCM', // or 'Sodium_XChaCha20Poly1305', 'Sodium_SecretBox'
 ```
 
 Ensure you have generated a compatible key using:
@@ -48,4 +49,4 @@ $decrypted = Crypt::decrypt($encrypted);
 
 ## Security Note
 
-Laravel Crypto uses `AEAD` (Authenticated Encryption with Associated Data). In the case of `Sodium_AES256GCM` and `Sodium_XChaCha20Poly1305`, the nonce is automatically generated and prepended to the ciphertext.
+Laravel Crypto uses `AEAD` (Authenticated Encryption with Associated Data). In the case of `Sodium_AES256GCM`, `Sodium_XChaCha20Poly1305` and `Sodium_SecretBox`, the nonce is automatically generated and prepended to the ciphertext.

@@ -22,6 +22,7 @@ use CodeLieutenant\LaravelCrypto\Encryption\Providers\Aegis128LGCMEncrypter;
 use CodeLieutenant\LaravelCrypto\Encryption\Providers\Aegis256GCMEncrypter;
 use CodeLieutenant\LaravelCrypto\Encryption\Providers\AesGcm256Encrypter;
 use CodeLieutenant\LaravelCrypto\Encryption\Providers\OpenSSLEncrypter;
+use CodeLieutenant\LaravelCrypto\Encryption\Providers\SecretBoxEncrypter;
 use CodeLieutenant\LaravelCrypto\Encryption\Providers\XChaCha20Poly1305Encrypter;
 use CodeLieutenant\LaravelCrypto\Enums\Encryption;
 use CodeLieutenant\LaravelCrypto\Hashing\Blake2b;
@@ -246,6 +247,7 @@ class ServiceProvider extends EncryptionServiceProvider
                 Encryption::SodiumXChaCha20Poly1305 => $app->make(XChaCha20Poly1305Encrypter::class),
                 Encryption::SodiumAEGIS256GCM => $app->make(Aegis256GCMEncrypter::class),
                 Encryption::SodiumAEGIS128LGCM => $app->make(Aegis128LGCMEncrypter::class),
+                Encryption::SodiumSecretBox => $app->make(SecretBoxEncrypter::class),
                 null => $app->make(OpenSSLEncrypter::class, ['cipher' => $cipher]),
             };
 
