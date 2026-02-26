@@ -31,7 +31,7 @@ trait Sha256
     public function createSha256Driver(): \CodeLieutenant\LaravelCrypto\Hashing\Sha256
     {
         if ($this->sha256 === null) {
-            $this->sha256 = $this->container->make(Sha256::class);
+            $this->sha256 = $this->container->make(\CodeLieutenant\LaravelCrypto\Hashing\Sha256::class);
         }
 
         return $this->sha256;

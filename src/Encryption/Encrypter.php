@@ -6,6 +6,7 @@ namespace CodeLieutenant\LaravelCrypto\Encryption;
 
 use CodeLieutenant\LaravelCrypto\Contracts\Encoder;
 use CodeLieutenant\LaravelCrypto\Contracts\EncrypterProvider;
+use CodeLieutenant\LaravelCrypto\Contracts\FileEncrypter;
 use CodeLieutenant\LaravelCrypto\Contracts\KeyLoader;
 use CodeLieutenant\LaravelCrypto\Enums\Encryption;
 use CodeLieutenant\LaravelCrypto\Support\Base64;
@@ -26,19 +27,21 @@ final class Encrypter implements EncrypterContract, StringEncrypter
 {
     use Macroable;
 
-    private readonly string $key;
+    protected readonly string $key;
 
-    private readonly int $nonceSize;
+    protected readonly int $nonceSize;
 
     public function __construct(
-        private readonly KeyLoader         $keyLoader,
-        private readonly Encoder           $encoder,
-        private readonly ?LoggerInterface  $logger,
-        private readonly EncrypterProvider $encrypter,
-        private readonly Random            $random = new Random(new Randomizer()),
+        protected readonly KeyLoader         $keyLoader,
+        protected readonly Encoder           $encoder,
+        protected readonly ?LoggerInterface  $logger,
+        protected readonly EncrypterProvider $encrypter,
+        protected readonly ?FileEncrypter    $fileEncrypter = null,
+        protected readonly Random            $random = new Random(new Randomizer()),
+        protected readonly ?KeyLoader        $fileKeyLoader = null,
     )
     {
-        $this->key = $this->keyLoader->getKey();
+        $this->key = (string)$this->keyLoader->getKey();
         $this->nonceSize = $this->encrypter->nonceSize();
     }
 
@@ -113,6 +116,11 @@ final class Encrypter implements EncrypterContract, StringEncrypter
         return $this->key;
     }
 
+    public function getFileKey(): string
+    {
+        return (string)($this->fileKeyLoader ?? $this->keyLoader)->getKey();
+    }
+
     /**
      * @return array<int, string>
      */
@@ -127,6 +135,24 @@ final class Encrypter implements EncrypterContract, StringEncrypter
     public function getPreviousKeys(): array
     {
         return $this->keyLoader->getPreviousKeys();
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    public function getPreviousFileKeys(): array
+    {
+        return ($this->fileKeyLoader ?? $this->keyLoader)->getPreviousKeys();
+    }
+
+    public function getFileEncrypter(): ?FileEncrypter
+    {
+        return $this->fileEncrypter;
+    }
+
+    public function getLogger(): ?LoggerInterface
+    {
+        return $this->logger;
     }
 
     public static function supported(string $key, string $cipher): bool
@@ -171,32 +197,6 @@ final class Encrypter implements EncrypterContract, StringEncrypter
     public function decryptString($payload): string
     {
         return $this->decrypt($payload, false);
-    }
-
-    public function encryptFile(string $inputFilePath, string $outputFilePath): void
-    {
-        try {
-            $this->encrypter->encryptFile($this->key, $inputFilePath, $outputFilePath);
-        } catch (Throwable $e) {
-            $this->logger?->error($e->getMessage(), [
-                'exception' => $e,
-                'stack' => $e->getTraceAsString(),
-            ]);
-            throw new EncryptException('File cannot be encrypted', previous: $e);
-        }
-    }
-
-    public function decryptFile(string $inputFilePath, string $outputFilePath): void
-    {
-        try {
-            $this->encrypter->decryptFile($this->key, $inputFilePath, $outputFilePath);
-        } catch (Throwable $e) {
-            $this->logger?->error($e->getMessage(), [
-                'exception' => $e,
-                'stack' => $e->getTraceAsString(),
-            ]);
-            throw new DecryptException('File cannot be decrypted', previous: $e);
-        }
     }
 
     public function generateNonce(?string $previous = null): string

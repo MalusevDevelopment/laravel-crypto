@@ -19,7 +19,12 @@ trait EnvKeySaver
         $replacement = [];
 
         foreach ($values as $env => $value) {
-            $match[] = $this->keyReplacementPattern($env, $value['old']);
+            $old = $value['old'] ?? '';
+            if (is_array($old)) {
+                $old = implode(',', $old);
+            }
+            $old = (string) $old;
+            $match[] = $this->keyReplacementPattern($env, $old);
             $replacement[] = $env.'='.$value['new'];
         }
 

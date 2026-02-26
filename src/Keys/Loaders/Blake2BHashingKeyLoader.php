@@ -6,5 +6,5 @@ namespace CodeLieutenant\LaravelCrypto\Keys\Loaders;
 
 class Blake2BHashingKeyLoader extends AppKeyLoader
 {
-    public const CONFIG_KEY_PATH = 'crypto.signing.keys.hmac';
+    public const CONFIG_KEY_PATH = 'crypto.hashing.config.blake2b.key';
 }

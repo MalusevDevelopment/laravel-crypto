@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use CodeLieutenant\LaravelCrypto\Encoder\JsonEncoder;
 use CodeLieutenant\LaravelCrypto\Encoder\PhpEncoder;
+use CodeLieutenant\LaravelCrypto\Encryption\File\SecretStreamFileEncrypter;
 use CodeLieutenant\LaravelCrypto\Hashing\Blake2b as Blake2bHash;
 use CodeLieutenant\LaravelCrypto\Hashing\Sha256 as Sha256Hash;
 use CodeLieutenant\LaravelCrypto\Hashing\Sha512 as Sha512Hash;
@@ -63,6 +64,26 @@ return [
             Sha256Hash::class => [],
             Sha512Hash::class => [],
         ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | File Encryption
+    |--------------------------------------------------------------------------
+    |
+    | This option controls the default algorithm that will be used to encrypt
+    | files. By default, it uses `SecretStream` from libsodium (XChaChaPoly1305).
+    | You can also use `NativeFileEncrypter::class` to use the same algorithm
+    | as the APP encryption.
+    |
+    | You can also specify a separate key for file encryption. If not set,
+    | it will fallback to `app.key` and `app.previous_keys`.
+    |
+    */
+    'file_encryption' => [
+        'driver' => env('CRYPTO_FILE_ENCRYPTION_ALGORITHM', SecretStreamFileEncrypter::class),
+        'key' => env('CRYPTO_FILE_ENCRYPTION_KEY', env('APP_KEY')),
+        'previous_keys' => env('CRYPTO_FILE_ENCRYPTION_PREVIOUS_KEYS', env('APP_PREVIOUS_KEYS', '')),
     ],
 
     /*

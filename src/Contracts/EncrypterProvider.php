@@ -18,10 +18,6 @@ interface EncrypterProvider
 
     public function decrypt(#[SensitiveParameter] string $key, string $payload, string $nonce): mixed;
 
-    public function encryptFile(#[SensitiveParameter] string $key, string $inputFilePath, string $outputFilePath): void;
-
-    public function decryptFile(#[SensitiveParameter] string $key, string $inputFilePath, string $outputFilePath): void;
-
     public function tagSize(): int;
 
     public function encryptChunk(#[SensitiveParameter] string $key, string $chunk, string $nonce): string;

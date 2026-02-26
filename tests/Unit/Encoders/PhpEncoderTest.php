@@ -38,3 +38,13 @@ test('decode as object', function (): void {
     expect($decoded)->toBeObject()
         ->toEqual($class);
 });
+
+test('decode with options', function (): void {
+    $encoder = new PhpEncoder(['allowed_classes' => ['MyClass']]);
+
+    $data = 'O:7:"MyClass":0:{}';
+
+    $decoded = $encoder->decode($data);
+
+    expect($decoded)->toBeInstanceOf(__PHP_Incomplete_Class::class);
+});

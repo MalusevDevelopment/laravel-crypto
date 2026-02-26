@@ -31,7 +31,7 @@ trait Sha512
     public function createSha512Driver(): \CodeLieutenant\LaravelCrypto\Hashing\Sha512
     {
         if ($this->sha512 === null) {
-            $this->sha512 = $this->container->make(Sha512::class);
+            $this->sha512 = $this->container->make(\CodeLieutenant\LaravelCrypto\Hashing\Sha512::class);
         }
 
         return $this->sha512;

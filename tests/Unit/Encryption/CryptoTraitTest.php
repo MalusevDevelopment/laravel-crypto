@@ -39,9 +39,6 @@ class TestTraitImpl implements EncrypterProvider
         }
     }
 
-    public function encryptFile(#[SensitiveParameter] string $key, string $inputFilePath, string $outputFilePath): void {}
-
-    public function decryptFile(#[SensitiveParameter] string $key, string $inputFilePath, string $outputFilePath): void {}
 
     public function tagSize(): int
     {

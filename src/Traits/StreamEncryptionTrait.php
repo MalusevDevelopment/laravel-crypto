@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CodeLieutenant\LaravelCrypto\Traits;
 
+use CodeLieutenant\LaravelCrypto\Contracts\EncrypterProvider;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Contracts\Encryption\EncryptException;
 use RuntimeException;
@@ -29,7 +30,7 @@ trait StreamEncryptionTrait
             }
 
             while (!feof($inputFile)) {
-                $chunk = fread($inputFile, self::CHUNK_SIZE);
+                $chunk = fread($inputFile, EncrypterProvider::CHUNK_SIZE);
                 if ($chunk === false) {
                     throw new EncryptException('Failed to read from input file');
                 }
@@ -76,7 +77,7 @@ trait StreamEncryptionTrait
             }
 
             while (!feof($inputFile)) {
-                $readSize = self::CHUNK_SIZE + $tagSize;
+                $readSize = EncrypterProvider::CHUNK_SIZE + $tagSize;
                 $chunk = fread($inputFile, $readSize);
                 if ($chunk === false) {
                     throw new DecryptException('Failed to read from input file');

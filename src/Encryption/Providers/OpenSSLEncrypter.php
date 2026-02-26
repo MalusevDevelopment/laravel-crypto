@@ -117,28 +117,4 @@ final class OpenSSLEncrypter implements EncrypterProvider
 
         return $this->laravel;
     }
-
-    private static function getMemoryLimit(): int
-    {
-        if (isset(self::$memoryLimitBytes)) {
-            return self::$memoryLimitBytes;
-        }
-
-        $limit = ini_get('memory_limit');
-        if (!$limit || $limit === '-1') {
-            return self::$memoryLimitBytes = PHP_INT_MAX;
-        }
-
-        $unit = strtolower(substr($limit, -1));
-        $value = (int)$limit;
-
-        $value *= match ($unit) {
-            'g' => 1024 * 1024 * 1024,
-            'm' => 1024 * 1024,
-            'k' => 1024,
-            default => 1,
-        };
-
-        return self::$memoryLimitBytes = $value;
-    }
 }

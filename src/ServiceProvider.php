@@ -15,6 +15,9 @@ use CodeLieutenant\LaravelCrypto\Encoder\JsonEncoder;
 use CodeLieutenant\LaravelCrypto\Encoder\MessagePackEncoder;
 use CodeLieutenant\LaravelCrypto\Encoder\PhpEncoder;
 use CodeLieutenant\LaravelCrypto\Encryption\Encrypter as LibEncrypter;
+use CodeLieutenant\LaravelCrypto\Encryption\File\NativeFileEncrypter;
+use CodeLieutenant\LaravelCrypto\Encryption\File\SecretStreamFileEncrypter;
+use CodeLieutenant\LaravelCrypto\Keys\Loaders\FileKeyLoader;
 use CodeLieutenant\LaravelCrypto\Encryption\Providers\Aegis128LGCMEncrypter;
 use CodeLieutenant\LaravelCrypto\Encryption\Providers\Aegis256GCMEncrypter;
 use CodeLieutenant\LaravelCrypto\Encryption\Providers\AesGcm256Encrypter;
@@ -28,6 +31,7 @@ use CodeLieutenant\LaravelCrypto\Hashing\Sha512;
 use CodeLieutenant\LaravelCrypto\Keys\Generators\AppKeyGenerator;
 use CodeLieutenant\LaravelCrypto\Keys\Generators\Blake2BHashingKeyGenerator;
 use CodeLieutenant\LaravelCrypto\Keys\Generators\EdDSASignerKeyGenerator;
+use CodeLieutenant\LaravelCrypto\Keys\Generators\FileKeyGenerator;
 use CodeLieutenant\LaravelCrypto\Keys\Generators\HmacKeyGenerator;
 use CodeLieutenant\LaravelCrypto\Keys\Loaders\AppKeyLoader;
 use CodeLieutenant\LaravelCrypto\Keys\Loaders\Blake2BHashingKeyLoader;
@@ -40,13 +44,16 @@ use CodeLieutenant\LaravelCrypto\Signing\Hmac\Sha512 as HmacSha512;
 use CodeLieutenant\LaravelCrypto\Signing\SigningManager;
 use CodeLieutenant\LaravelCrypto\Support\Random;
 use Illuminate\Contracts\Config\Repository;
+use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Contracts\Encryption\Encrypter;
+use Illuminate\Contracts\Encryption\EncryptException;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Encryption\Encrypter as LaravelConcreteEncrypter;
 use Illuminate\Encryption\EncryptionServiceProvider;
 use Illuminate\Support\Facades\Crypt;
 use Override;
 use Psr\Log\LoggerInterface;
+use Throwable;
 use Random\Engine\Secure;
 use Random\Randomizer;
 
@@ -60,12 +67,48 @@ class ServiceProvider extends EncryptionServiceProvider
 
         Crypt::macro('encryptFile', function (string $inputFilePath, string $outputFilePath): void {
             /** @var LibEncrypter $this */
-            $this->encryptFile($inputFilePath, $outputFilePath);
+            if ($this->getFileEncrypter() === null) {
+                throw new EncryptException('File encrypter is not configured');
+            }
+
+            try {
+                $this->getFileEncrypter()->encryptFile($this->getFileKey(), $inputFilePath, $outputFilePath);
+            } catch (Throwable $e) {
+                $this->getLogger()?->error($e->getMessage(), [
+                    'exception' => $e,
+                    'stack' => $e->getTraceAsString(),
+                ]);
+
+                throw new EncryptException('File cannot be encrypted', previous: $e);
+            }
         });
 
         Crypt::macro('decryptFile', function (string $inputFilePath, string $outputFilePath): void {
             /** @var LibEncrypter $this */
-            $this->decryptFile($inputFilePath, $outputFilePath);
+            if ($this->getFileEncrypter() === null) {
+                throw new DecryptException('File encrypter is not configured');
+            }
+
+            try {
+                $this->getFileEncrypter()->decryptFile($this->getFileKey(), $inputFilePath, $outputFilePath);
+            } catch (Throwable $e) {
+                foreach ($this->getPreviousFileKeys() as $key) {
+                    try {
+                        $this->getFileEncrypter()->decryptFile($key, $inputFilePath, $outputFilePath);
+
+                        return;
+                    } catch (Throwable) {
+                        // Continue
+                    }
+                }
+
+                $this->getLogger()?->error($e->getMessage(), [
+                    'exception' => $e,
+                    'stack' => $e->getTraceAsString(),
+                ]);
+
+                throw new DecryptException('File cannot be decrypted', previous: $e);
+            }
         });
     }
 
@@ -115,6 +158,10 @@ class ServiceProvider extends EncryptionServiceProvider
         $this->app->singleton(
             AppKeyLoader::class,
             fn(Application $app): AppKeyLoader => AppKeyLoader::make($app->make(Repository::class))
+        );
+        $this->app->singleton(
+            FileKeyLoader::class,
+            fn(Application $app): FileKeyLoader => FileKeyLoader::make($app->make(Repository::class))
         );
         $this->app->singleton(
             Blake2BHashingKeyLoader::class,
@@ -192,19 +239,31 @@ class ServiceProvider extends EncryptionServiceProvider
     protected function registerEncrypter(): void
     {
         $func = static function (Application $app): LaravelConcreteEncrypter|LibEncrypter {
-            $cipher = $app->make(Repository::class)->get('app.cipher');
+            $config = $app->make(Repository::class);
+            $cipher = $config->get('app.cipher');
+            $encProvider = match (Encryption::tryFrom($cipher)) {
+                Encryption::SodiumAES256GCM => $app->make(AesGcm256Encrypter::class),
+                Encryption::SodiumXChaCha20Poly1305 => $app->make(XChaCha20Poly1305Encrypter::class),
+                Encryption::SodiumAEGIS256GCM => $app->make(Aegis256GCMEncrypter::class),
+                Encryption::SodiumAEGIS128LGCM => $app->make(Aegis128LGCMEncrypter::class),
+                null => $app->make(OpenSSLEncrypter::class, ['cipher' => $cipher]),
+            };
+
+            $fileDriver = $config->get('crypto.file_encryption.driver', SecretStreamFileEncrypter::class);
+
+            $fileEncrypter = match ($fileDriver) {
+                NativeFileEncrypter::class, 'native' => new NativeFileEncrypter($encProvider),
+                default => new SecretStreamFileEncrypter(),
+            };
+
             return new LibEncrypter(
                 keyLoader: $app->make(AppKeyLoader::class),
                 encoder: $app->make(Encoder::class),
                 logger: $app->make(LoggerInterface::class),
-                encrypter: match (Encryption::tryFrom($cipher)) {
-                    Encryption::SodiumAES256GCM => $app->make(AesGcm256Encrypter::class),
-                    Encryption::SodiumXChaCha20Poly1305 => $app->make(XChaCha20Poly1305Encrypter::class),
-                    Encryption::SodiumAEGIS256GCM => $app->make(Aegis256GCMEncrypter::class),
-                    Encryption::SodiumAEGIS128LGCM => $app->make(Aegis128LGCMEncrypter::class),
-                    null => $app->make(OpenSSLEncrypter::class, ['cipher' => $cipher]),
-                },
+                encrypter: $encProvider,
+                fileEncrypter: $fileEncrypter,
                 random: $app->make(Random::class),
+                fileKeyLoader: $app->make(FileKeyLoader::class),
             );
         };
 
@@ -217,6 +276,7 @@ class ServiceProvider extends EncryptionServiceProvider
     protected function registerGenerators(): void
     {
         $this->app->singleton(AppKeyGenerator::class);
+        $this->app->singleton(FileKeyGenerator::class);
         $this->app->singleton(Blake2BHashingKeyGenerator::class);
         $this->app->singleton(HmacKeyGenerator::class);
         $this->app->singleton(EdDSASignerKeyGenerator::class);

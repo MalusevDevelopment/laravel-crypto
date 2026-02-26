@@ -7,6 +7,7 @@ namespace CodeLieutenant\LaravelCrypto\Console;
 use CodeLieutenant\LaravelCrypto\Keys\Generators\AppKeyGenerator;
 use CodeLieutenant\LaravelCrypto\Keys\Generators\Blake2BHashingKeyGenerator;
 use CodeLieutenant\LaravelCrypto\Keys\Generators\EdDSASignerKeyGenerator;
+use CodeLieutenant\LaravelCrypto\Keys\Generators\FileKeyGenerator;
 use CodeLieutenant\LaravelCrypto\Keys\Generators\HmacKeyGenerator;
 use Exception;
 use Illuminate\Console\Command;
@@ -23,6 +24,7 @@ class GenerateCryptoKeysCommand extends Command
         {--show    : Display the key instead of modifying files}
         {--no-eddsa   : Generate EdDSA(Ed25519) public and private key}
         {--no-app     : Generate application key}
+        {--no-file    : Generate file encryption key}
         {--no-blake2b : Generate blake2b hashing key}
         {--no-hmac    : Generate Hmac key}';
 
@@ -31,12 +33,14 @@ class GenerateCryptoKeysCommand extends Command
     public function handle(
         EdDSASignerKeyGenerator $edDSAGenerator,
         AppKeyGenerator $appKeyGenerator,
+        FileKeyGenerator $fileKeyGenerator,
         Blake2BHashingKeyGenerator $blake2bKeyGenerator,
         HmacKeyGenerator $hmacKeyGenerator,
     ): int {
         $show = $this->option('show');
         $eddsa = ! $this->option('no-eddsa');
         $app = ! $this->option('no-app');
+        $file = ! $this->option('no-file');
         $blake2b = ! $this->option('no-blake2b');
         $hmac = ! $this->option('no-hmac');
 
@@ -46,7 +50,7 @@ class GenerateCryptoKeysCommand extends Command
             return self::FAILURE;
         }
 
-        $write = $show ? null : app()->environmentFilePath();
+        $write = $show ? null : (method_exists($this->getLaravel(), 'environmentFilePath') ? $this->getLaravel()->environmentFilePath() : null);
 
         try {
             if ($eddsa) {
@@ -62,6 +66,14 @@ class GenerateCryptoKeysCommand extends Command
 
                 if ($show) {
                     $this->info('App Key: '.$appKey);
+                }
+            }
+
+            if ($file) {
+                $fileKey = $fileKeyGenerator->generate($write);
+
+                if ($show) {
+                    $this->info('File Key: '.$fileKey);
                 }
             }
 

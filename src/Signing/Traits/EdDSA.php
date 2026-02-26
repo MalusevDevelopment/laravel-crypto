@@ -26,7 +26,7 @@ trait EdDSA
     public function createEdDSADriver(): \CodeLieutenant\LaravelCrypto\Signing\EdDSA\EdDSA
     {
         if ($this->eddsa === null) {
-            $this->eddsa = $this->container->get(EdDSA::class);
+            $this->eddsa = $this->container->get(\CodeLieutenant\LaravelCrypto\Signing\EdDSA\EdDSA::class);
         }
 
         return $this->eddsa;

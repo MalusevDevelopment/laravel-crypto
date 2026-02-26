@@ -27,6 +27,6 @@ trait Blake2b
 
     public function createBlake2bDriver(): Blake2bSigning
     {
-        return $this->blake2b ??= $this->container->get(Blake2b::class);
+        return $this->blake2b ??= $this->container->get(Blake2bSigning::class);
     }
 }

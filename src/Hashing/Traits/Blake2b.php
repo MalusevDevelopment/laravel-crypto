@@ -33,7 +33,7 @@ trait Blake2b
     public function createBlake2bDriver(): Blake2bHashing
     {
         if ($this->blake2b === null) {
-            $this->blake2b = $this->container->make(Blake2b::class);
+            $this->blake2b = $this->container->make(Blake2bHashing::class);
         }
 
         return $this->blake2b;
