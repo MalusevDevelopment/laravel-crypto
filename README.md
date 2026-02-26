@@ -9,10 +9,10 @@ Laravel Crypto provides a simple and easy-to-use API for encrypting, decrypting,
 
 ## Why Laravel Crypto?
 
-- **Modern Algorithms**: Support for XChaCha20-Poly1305, AES-256-GCM, XSalsa20-Poly1305, Blake2b, and EdDSA.
+- **Modern Algorithms**: Support for XChaCha20-Poly1305, AES-256-GCM, AEGIS-128L, AEGIS-256, XSalsa20-Poly1305, Blake2b, and EdDSA.
 - **Performance**: High-performance cryptographic operations utilizing hardware acceleration where available.
 - **Drop-in Replacement**: Seamlessly replaces Laravel's default `EncryptionServiceProvider`.
-- **Comprehensive**: Includes support for hashing, signing (symmetric and asymmetric), and various data encoders (JSON, MessagePack, Igbinary).
+- **Comprehensive**: Includes support for hashing, signing (symmetric and asymmetric), file encryption, and various data encoders (JSON, MessagePack, Igbinary).
 
 ## Requirements
 
@@ -92,6 +92,20 @@ use Illuminate\Support\Facades\Crypt;
 
 $encrypted = Crypt::encryptString('Hello Sodium');
 $decrypted = Crypt::decryptString($encrypted);
+```
+
+### File Encryption
+
+Securely encrypt large files using chunked streaming.
+
+```php
+use Illuminate\Support\Facades\Crypt;
+
+// Encrypt a file
+Crypt::encryptFile('path/to/input.txt', 'path/to/output.enc');
+
+// Decrypt a file
+Crypt::decryptFile('path/to/output.enc', 'path/to/decrypted.txt');
 ```
 
 ### Hashing

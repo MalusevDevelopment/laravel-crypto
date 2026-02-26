@@ -15,6 +15,7 @@ By default, this command will generate:
 - **EdDSA Key Pair**: Used for asymmetric signing.
 - **Blake2b Hashing Key**: Used for keyed hashing.
 - **HMAC Key**: Used for symmetric signing.
+- **File Encryption Key**: Used specifically for file encryption.
 
 ### Options
 
@@ -26,6 +27,7 @@ By default, this command will generate:
 | `--no-app` | Do **not** generate the application key. |
 | `--no-blake2b` | Do **not** generate the Blake2b hashing key. |
 | `--no-hmac` | Do **not** generate the HMAC key. |
+| `--no-file` | Do **not** generate the file encryption key. |
 
 ### Environment Variables
 
@@ -34,5 +36,6 @@ The command updates (or shows) the following environment variables in your `.env
 - `APP_KEY`
 - `CRYPTO_BLAKE2B_HASHING_KEY`
 - `CRYPTO_HMAC_KEY`
+- `CRYPTO_FILE_ENCRYPTION_KEY`
 
 For **EdDSA**, the keys are saved to a file specified in your `config/crypto.php` (defaulting to `storage/keys/eddsa.key`). The environment variable `CRYPTO_EDDSA_PUBLIC_CRYPTO_KEY` points to this file.
