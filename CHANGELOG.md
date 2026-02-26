@@ -1,29 +1,12 @@
 # Changelog
 
-## [Unreleased]
+## [v2.0.0](https://github.com/MalusevDevelopment/laravel-crypto/releases/tag/v2.0.0) (2026-02-26)
 
-### Added
-- Support for Laravel 11 "Previous keys" feature in `Encrypter`.
-- Added `getPreviousKeys()` to `KeyLoader` contract.
-- Support for `APP_PREVIOUS_KEYS` in `AppKeyLoader`.
+[Full Changelog](https://github.com/MalusevDevelopment/laravel-crypto/compare/v1.2.0...v2.0.0)
 
-### Changed
-- Refactored `AppKeyLoader` and `EdDSASignerKeyLoader` to use instance properties instead of static ones for better testability and correctness.
+## [v1.2.0](https://github.com/MalusevDevelopment/laravel-crypto/releases/tag/v2.0.0) (2026-01-20)
 
-### Fixed
-- Fixed a Rector crash in `tests/Feature/ServiceProviderLoadingTest.php` by refactoring complex static calls.
-
-## [v1.2.0](https://github.com/MalusevDevelopment/laravel-crypto/releases/tag/v1.2.0) (2026-01-20)
-
-[Full Changelog](https://github.com/MalusevDevelopment/laravel-crypto/compare/v1.1.0...v1.2.0)
-
-**Merged pull requests:**
-
-- feature\(encryption\): add AEGIS 256 and AEGIS 128L encryption providers [\#38](https://github.com/MalusevDevelopment/laravel-crypto/pull/38) ([CodeLieutenant](https://github.com/CodeLieutenant))
-
-## [v1.1.0](https://github.com/MalusevDevelopment/laravel-crypto/releases/tag/v1.2.0) (2026-01-20)
-
-[Full Changelog](https://github.com/MalusevDevelopment/laravel-crypto/compare/v1.0.1...v1.1.0)
+[Full Changelog](https://github.com/MalusevDevelopment/laravel-crypto/compare/v1.0.1...v1.2.0)
 
 **Implemented enhancements:**
 
@@ -31,6 +14,7 @@
 
 **Merged pull requests:**
 
+- feature\(encryption\): add AEGIS 256 and AEGIS 128L encryption providers [\#38](https://github.com/MalusevDevelopment/laravel-crypto/pull/38) ([CodeLieutenant](https://github.com/CodeLieutenant))
 - chore\(deps\): Bump league/commonmark from 2.6.0 to 2.7.0 [\#36](https://github.com/MalusevDevelopment/laravel-crypto/pull/36) ([dependabot[bot]](https://github.com/apps/dependabot))
 - Bump nesbot/carbon from 2.72.5 to 2.72.6 [\#34](https://github.com/MalusevDevelopment/laravel-crypto/pull/34) ([dependabot[bot]](https://github.com/apps/dependabot))
 - Bump league/commonmark from 2.5.3 to 2.6.0 [\#33](https://github.com/MalusevDevelopment/laravel-crypto/pull/33) ([dependabot[bot]](https://github.com/apps/dependabot))
@@ -38,11 +22,11 @@
 - Bump symfony/http-foundation from 6.4.4 to 6.4.14 [\#31](https://github.com/MalusevDevelopment/laravel-crypto/pull/31) ([dependabot[bot]](https://github.com/apps/dependabot))
 - Bump symfony/process from 6.4.4 to 6.4.14 [\#30](https://github.com/MalusevDevelopment/laravel-crypto/pull/30) ([dependabot[bot]](https://github.com/apps/dependabot))
 
-## [v1.0.1](https://github.com/MalusevDevelopment/laravel-crypto/releases/tag/v1.2.0) (2024-03-15)
+## [v1.0.1](https://github.com/MalusevDevelopment/laravel-crypto/releases/tag/v2.0.0) (2024-03-15)
 
 [Full Changelog](https://github.com/MalusevDevelopment/laravel-crypto/compare/v1.0.0...v1.0.1)
 
-## [v1.0.0](https://github.com/MalusevDevelopment/laravel-crypto/releases/tag/v1.2.0) (2024-03-15)
+## [v1.0.0](https://github.com/MalusevDevelopment/laravel-crypto/releases/tag/v2.0.0) (2024-03-15)
 
 [Full Changelog](https://github.com/MalusevDevelopment/laravel-crypto/compare/v1.0.0-rc1...v1.0.0)
 
@@ -66,35 +50,35 @@
 - Change namespace [\#20](https://github.com/MalusevDevelopment/laravel-crypto/pull/20) ([CodeLieutenant](https://github.com/CodeLieutenant))
 - Feat/pest tests [\#14](https://github.com/MalusevDevelopment/laravel-crypto/pull/14) ([CodeLieutenant](https://github.com/CodeLieutenant))
 
-## [v1.0.0-rc1](https://github.com/MalusevDevelopment/laravel-crypto/releases/tag/v1.2.0) (2024-03-05)
+## [v1.0.0-rc1](https://github.com/MalusevDevelopment/laravel-crypto/releases/tag/v2.0.0) (2024-03-05)
 
 [Full Changelog](https://github.com/MalusevDevelopment/laravel-crypto/compare/v1.0.0-beta2...v1.0.0-rc1)
 
-## [v1.0.0-beta2](https://github.com/MalusevDevelopment/laravel-crypto/releases/tag/v1.2.0) (2024-03-05)
+## [v1.0.0-beta2](https://github.com/MalusevDevelopment/laravel-crypto/releases/tag/v2.0.0) (2024-03-05)
 
 [Full Changelog](https://github.com/MalusevDevelopment/laravel-crypto/compare/v1.0.0-beta1...v1.0.0-beta2)
 
-## [v1.0.0-beta1](https://github.com/MalusevDevelopment/laravel-crypto/releases/tag/v1.2.0) (2024-02-28)
+## [v1.0.0-beta1](https://github.com/MalusevDevelopment/laravel-crypto/releases/tag/v2.0.0) (2024-02-28)
 
 [Full Changelog](https://github.com/MalusevDevelopment/laravel-crypto/compare/v1.0.0-alpha2...v1.0.0-beta1)
 
-## [v1.0.0-alpha2](https://github.com/MalusevDevelopment/laravel-crypto/releases/tag/v1.2.0) (2024-02-28)
+## [v1.0.0-alpha2](https://github.com/MalusevDevelopment/laravel-crypto/releases/tag/v2.0.0) (2024-02-28)
 
 [Full Changelog](https://github.com/MalusevDevelopment/laravel-crypto/compare/v1.0.0-alpha1...v1.0.0-alpha2)
 
-## [v1.0.0-alpha1](https://github.com/MalusevDevelopment/laravel-crypto/releases/tag/v1.2.0) (2024-02-27)
+## [v1.0.0-alpha1](https://github.com/MalusevDevelopment/laravel-crypto/releases/tag/v2.0.0) (2024-02-27)
 
 [Full Changelog](https://github.com/MalusevDevelopment/laravel-crypto/compare/v0.1.0...v1.0.0-alpha1)
 
-## [v0.1.0](https://github.com/MalusevDevelopment/laravel-crypto/releases/tag/v1.2.0) (2020-08-07)
+## [v0.1.0](https://github.com/MalusevDevelopment/laravel-crypto/releases/tag/v2.0.0) (2020-08-07)
 
 [Full Changelog](https://github.com/MalusevDevelopment/laravel-crypto/compare/v0.0.2...v0.1.0)
 
-## [v0.0.2](https://github.com/MalusevDevelopment/laravel-crypto/releases/tag/v1.2.0) (2020-08-07)
+## [v0.0.2](https://github.com/MalusevDevelopment/laravel-crypto/releases/tag/v2.0.0) (2020-08-07)
 
 [Full Changelog](https://github.com/MalusevDevelopment/laravel-crypto/compare/v0.0.1...v0.0.2)
 
-## [v0.0.1](https://github.com/MalusevDevelopment/laravel-crypto/releases/tag/v1.2.0) (2020-08-05)
+## [v0.0.1](https://github.com/MalusevDevelopment/laravel-crypto/releases/tag/v2.0.0) (2020-08-05)
 
 [Full Changelog](https://github.com/MalusevDevelopment/laravel-crypto/compare/8d1abddf068bb7235bf78811b3e1ff2f7c207d10...v0.0.1)
 
