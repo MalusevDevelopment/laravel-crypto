@@ -28,4 +28,20 @@ trait LaravelKeyParser
 
         return $key;
     }
+
+    /**
+     * @return array<int, string>
+     */
+    protected static function parseKeys(string|array|null $keys): array
+    {
+        if ($keys === null || $keys === '') {
+            return [];
+        }
+
+        if (is_string($keys)) {
+            $keys = explode(',', $keys);
+        }
+
+        return array_map(fn ($key): string => self::parseKey(trim((string) $key)), array_filter($keys));
+    }
 }

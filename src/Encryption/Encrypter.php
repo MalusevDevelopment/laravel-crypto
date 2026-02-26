@@ -64,17 +64,39 @@ final readonly class Encrypter implements EncrypterContract, StringEncrypter
         try {
             $decrypted = $this->encrypter->decrypt($this->key, $cipherText, $nonce);
         } catch (Exception $e) {
-            $this->logger?->error($e->getMessage(), [
-                'stack' => $e->getTraceAsString(),
-                'exception' => $e,
-            ]);
-            throw new DecryptException('Payload cannot be decrypted', previous: $e);
+            return $this->decryptWithPreviousKeys($cipherText, $nonce, $unserialize, $e);
         }
 
         return match ($unserialize) {
             true => $this->encoder->decode($decrypted),
             false => $decrypted,
         };
+    }
+
+    /**
+     * @throws DecryptException
+     */
+    private function decryptWithPreviousKeys(string $cipherText, string $nonce, bool $unserialize, ?Exception $exception = null): mixed
+    {
+        foreach ($this->getPreviousKeys() as $key) {
+            try {
+                $decrypted = $this->encrypter->decrypt($key, $cipherText, $nonce);
+
+                return match ($unserialize) {
+                    true => $this->encoder->decode($decrypted),
+                    false => $decrypted,
+                };
+            } catch (Exception) {
+                //
+            }
+        }
+
+        $this->logger?->error($exception?->getMessage() ?? 'Payload cannot be decrypted', [
+            'stack' => $exception?->getTraceAsString(),
+            'exception' => $exception,
+        ]);
+
+        throw new DecryptException('Payload cannot be decrypted', previous: $exception);
     }
 
     public function getKey(): string
@@ -91,11 +113,11 @@ final readonly class Encrypter implements EncrypterContract, StringEncrypter
     }
 
     /**
-     * @return array{}
+     * @return array<int, string>
      */
     public function getPreviousKeys(): array
     {
-        return [];
+        return $this->keyLoader->getPreviousKeys();
     }
 
     public static function supported(string $key, string $cipher): bool

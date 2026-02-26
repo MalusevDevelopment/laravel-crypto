@@ -21,21 +21,20 @@ class EdDSASignerKeyLoader implements KeyLoader
 
     private const string CONFIG_KEY_PATH = 'crypto.signing.keys.eddsa';
 
-    private static string $privateKey;
-
-    private static string $publicKey;
+    public function __construct(
+        private readonly string $publicKey,
+        private readonly string $privateKey
+    ) {}
 
     public static function make(Repository $config, LoggerInterface $logger): static
     {
-        if (! isset(self::$publicKey, self::$privateKey)) {
-            $path = $config->get(self::CONFIG_KEY_PATH);
+        $path = $config->get(self::CONFIG_KEY_PATH);
 
-            throw_if($path === null, MissingAppKeyException::class, 'File for EdDSA signer is not set');
+        throw_if($path === null, MissingAppKeyException::class, 'File for EdDSA signer is not set');
 
-            [self::$publicKey, self::$privateKey] = static::parseKeys($path, $logger);
-        }
+        [$publicKey, $privateKey] = static::parseKeys($path, $logger);
 
-        return new static;
+        return new static($publicKey, $privateKey);
     }
 
     /**
@@ -66,6 +65,14 @@ class EdDSASignerKeyLoader implements KeyLoader
      */
     public function getKey(): string|array
     {
-        return [self::$publicKey, self::$privateKey];
+        return [$this->publicKey, $this->privateKey];
+    }
+
+    /**
+     * @return array{}
+     */
+    public function getPreviousKeys(): array
+    {
+        return [];
     }
 }

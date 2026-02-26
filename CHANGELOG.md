@@ -1,5 +1,18 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+- Support for Laravel 11 "Previous keys" feature in `Encrypter`.
+- Added `getPreviousKeys()` to `KeyLoader` contract.
+- Support for `APP_PREVIOUS_KEYS` in `AppKeyLoader`.
+
+### Changed
+- Refactored `AppKeyLoader` and `EdDSASignerKeyLoader` to use instance properties instead of static ones for better testability and correctness.
+
+### Fixed
+- Fixed a Rector crash in `tests/Feature/ServiceProviderLoadingTest.php` by refactoring complex static calls.
+
 ## [v1.2.0](https://github.com/MalusevDevelopment/laravel-crypto/releases/tag/v1.2.0) (2026-01-20)
 
 [Full Changelog](https://github.com/MalusevDevelopment/laravel-crypto/compare/v1.1.0...v1.2.0)

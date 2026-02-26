@@ -12,21 +12,30 @@ class AppKeyLoader implements KeyLoader
 {
     use LaravelKeyParser;
 
-    protected static string $key;
-
     public const CONFIG_KEY_PATH = 'app.key';
+
+    public const string CONFIG_PREVIOUS_KEYS_PATH = 'app.previous_keys';
+
+    public function __construct(
+        protected readonly string $key,
+        protected readonly array $previousKeys = []
+    ) {}
 
     public static function make(Repository $config): static
     {
-        if (! isset(static::$key)) {
-            static::$key = self::parseKey($config->get(static::CONFIG_KEY_PATH));
-        }
-
-        return new static;
+        return new static(
+            self::parseKey($config->get(static::CONFIG_KEY_PATH)),
+            self::parseKeys($config->get(static::CONFIG_PREVIOUS_KEYS_PATH))
+        );
     }
 
     public function getKey(): string|array
     {
-        return self::$key;
+        return $this->key;
+    }
+
+    public function getPreviousKeys(): array
+    {
+        return $this->previousKeys;
     }
 }

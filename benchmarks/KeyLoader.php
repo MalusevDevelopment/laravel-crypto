@@ -14,4 +14,9 @@ final readonly class KeyLoader implements KeyLoaderContract
     {
         return $this->key;
     }
+
+    public function getPreviousKeys(): array
+    {
+        return [];
+    }
 }

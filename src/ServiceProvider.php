@@ -180,12 +180,17 @@ class ServiceProvider extends EncryptionServiceProvider
     #[Override]
     protected function registerEncrypter(): void
     {
-        $func = static function (Application $app): \Illuminate\Encryption\Encrypter|LibEncrypter {
+        $func = static function (Application $app): LaravelConcreteEncrypter|LibEncrypter {
             $cipher = $app->make(Repository::class)->get('app.cipher');
             $keyLoader = $app->make(AppKeyLoader::class);
             $enc = Encryption::tryFrom($cipher);
             if ($enc === null) {
-                return new LaravelConcreteEncrypter($keyLoader->getKey(), $cipher);
+                $encrypter = new LaravelConcreteEncrypter($keyLoader->getKey(), $cipher);
+                if (method_exists($encrypter, 'previousKeys')) {
+                    $encrypter->previousKeys($keyLoader->getPreviousKeys());
+                }
+
+                return $encrypter;
             }
 
             return new LibEncrypter(
