@@ -12,7 +12,7 @@ Laravel Crypto provides a simple and easy-to-use API for encrypting, decrypting,
 - **Modern Algorithms**: Support for XChaCha20-Poly1305, AES-256-GCM, AEGIS-128L, AEGIS-256, XSalsa20-Poly1305, Blake2b, and EdDSA.
 - **Performance**: High-performance cryptographic operations utilizing hardware acceleration where available.
 - **Drop-in Replacement**: Seamlessly replaces Laravel's default `EncryptionServiceProvider`.
-- **Comprehensive**: Includes support for hashing, signing (symmetric and asymmetric), file encryption, and various data encoders (JSON, MessagePack, Igbinary).
+- **Comprehensive**: Includes support for hashing, signing (symmetric and asymmetric), file encryption, Eloquent casting for encrypted files, and various data encoders (JSON, MessagePack, Igbinary).
 
 ## Requirements
 
@@ -130,6 +130,29 @@ $sig = Sign::sign('message');
 
 // EdDSA
 $sig = Sign::eddsaSign('message');
+```
+
+### Eloquent Casting
+
+Store files securely by automatically encrypting and decrypting them on-the-fly via an Eloquent caster.
+
+```php
+use CodeLieutenant\LaravelCrypto\Casts\EncryptedFileCast;
+use Illuminate\Database\Eloquent\Model;
+
+class Document extends Model
+{
+    protected $casts = [
+        'file' => EncryptedFileCast::class,
+    ];
+}
+
+// Accessing the file decrypts it to a temporary location
+$content = $document->file->contents();
+
+// Modifying the content and saving the model re-encrypts the file
+$document->file->putContents('Secret Data');
+$document->save();
 ```
 
 ## Performance
