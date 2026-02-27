@@ -6,11 +6,11 @@ namespace CodeLieutenant\LaravelCrypto;
 
 use CodeLieutenant\LaravelCrypto\Console\GenerateCryptoKeysCommand;
 use CodeLieutenant\LaravelCrypto\Contracts\Encoder;
-use CodeLieutenant\LaravelCrypto\Contracts\EncrypterProvider;
 use CodeLieutenant\LaravelCrypto\Contracts\Hashing;
 use CodeLieutenant\LaravelCrypto\Contracts\KeyLoader;
 use CodeLieutenant\LaravelCrypto\Contracts\PublicKeySigning;
 use CodeLieutenant\LaravelCrypto\Contracts\Signing;
+use CodeLieutenant\LaravelCrypto\Contracts\UserEncryptionContext as UserEncryptionContextContract;
 use CodeLieutenant\LaravelCrypto\Encoder\IgbinaryEncoder;
 use CodeLieutenant\LaravelCrypto\Encoder\JsonEncoder;
 use CodeLieutenant\LaravelCrypto\Encoder\MessagePackEncoder;
@@ -25,7 +25,11 @@ use CodeLieutenant\LaravelCrypto\Encryption\Providers\AesGcm256Encrypter;
 use CodeLieutenant\LaravelCrypto\Encryption\Providers\OpenSSLEncrypter;
 use CodeLieutenant\LaravelCrypto\Encryption\Providers\SecretBoxEncrypter;
 use CodeLieutenant\LaravelCrypto\Encryption\Providers\XChaCha20Poly1305Encrypter;
+use CodeLieutenant\LaravelCrypto\Encryption\UserKey\UserEncrypter;
+use CodeLieutenant\LaravelCrypto\Encryption\UserKey\UserEncryptionContext;
+use CodeLieutenant\LaravelCrypto\Encryption\UserKey\UserSecretManager;
 use CodeLieutenant\LaravelCrypto\Enums\Encryption;
+use CodeLieutenant\LaravelCrypto\Events\PasswordChanged;
 use CodeLieutenant\LaravelCrypto\Hashing\Blake2b;
 use CodeLieutenant\LaravelCrypto\Hashing\HashingManager;
 use CodeLieutenant\LaravelCrypto\Hashing\Sha256;
@@ -35,11 +39,6 @@ use CodeLieutenant\LaravelCrypto\Keys\Generators\Blake2BHashingKeyGenerator;
 use CodeLieutenant\LaravelCrypto\Keys\Generators\EdDSASignerKeyGenerator;
 use CodeLieutenant\LaravelCrypto\Keys\Generators\FileKeyGenerator;
 use CodeLieutenant\LaravelCrypto\Keys\Generators\HmacKeyGenerator;
-use CodeLieutenant\LaravelCrypto\Contracts\UserEncryptionContext as UserEncryptionContextContract;
-use CodeLieutenant\LaravelCrypto\Encryption\UserKey\UserEncryptionContext;
-use CodeLieutenant\LaravelCrypto\Encryption\UserKey\UserEncrypter;
-use CodeLieutenant\LaravelCrypto\Encryption\UserKey\UserSecretManager;
-use CodeLieutenant\LaravelCrypto\Events\PasswordChanged;
 use CodeLieutenant\LaravelCrypto\Keys\Loaders\AppKeyLoader;
 use CodeLieutenant\LaravelCrypto\Keys\Loaders\Blake2BHashingKeyLoader;
 use CodeLieutenant\LaravelCrypto\Keys\Loaders\EdDSASignerKeyLoader;
@@ -170,9 +169,9 @@ class ServiceProvider extends EncryptionServiceProvider
             );
 
             $fileEncrypter = match ($fileDriver) {
-                NativeFileEncrypter::class, 'native'       => new NativeFileEncrypter($app->make(\CodeLieutenant\LaravelCrypto\Contracts\EncrypterProvider::class)),
+                NativeFileEncrypter::class, 'native' => new NativeFileEncrypter($app->make(\CodeLieutenant\LaravelCrypto\Contracts\EncrypterProvider::class)),
                 XSalsaHmacFileEncrypter::class, 'xsalsa-hmac' => new XSalsaHmacFileEncrypter,
-                default                                    => new SecretStreamFileEncrypter,
+                default => new SecretStreamFileEncrypter,
             };
 
             return new UserEncrypter(

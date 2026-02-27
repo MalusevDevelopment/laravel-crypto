@@ -114,4 +114,3 @@ final class UserEncrypter
         return new LaravelEncrypter($key, 'AES-256-CBC');
     }
 }
-

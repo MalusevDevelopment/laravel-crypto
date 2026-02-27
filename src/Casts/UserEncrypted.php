@@ -26,7 +26,7 @@ use Illuminate\Database\Eloquent\Model;
  * The X-Encryption-Token header must be present on any request that reads
  * or writes these fields, or MissingEncryptionContextException is thrown.
  */
-final class PasswordDerivedEncrypted implements CastsAttributes
+final class UserEncrypted implements CastsAttributes
 {
     /**
      * Decrypt the stored ciphertext using the current user's key.
@@ -52,4 +52,3 @@ final class PasswordDerivedEncrypted implements CastsAttributes
         return app(UserEncrypter::class)->encryptString((string) $value);
     }
 }
-

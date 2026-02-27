@@ -18,10 +18,9 @@ final class MissingEncryptionContextException extends RuntimeException
     public function __construct()
     {
         parent::__construct(
-            'No per-user encryption key is loaded for this request. ' .
-            'Ensure the X-Encryption-Token header is present and the ' .
+            'No per-user encryption key is loaded for this request. '.
+            'Ensure the X-Encryption-Token header is present and the '.
             'BootPerUserEncryption middleware is applied to this route.',
         );
     }
 }
-

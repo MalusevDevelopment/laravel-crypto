@@ -15,8 +15,8 @@ use Workbench\App\Models\User;
 
 Route::post('/register', static function (Request $request) {
     $user = User::create([
-        'name'     => $request->input('name', 'Test'),
-        'email'    => $request->input('email'),
+        'name' => $request->input('name', 'Test'),
+        'email' => $request->input('email'),
         'password' => Hash::make($request->input('password')),
     ]);
 
@@ -68,7 +68,7 @@ Route::middleware(['auth', BootPerUserEncryption::class])->group(static function
     Route::post('/profile/secrets', static function (Request $request) {
         $user = Auth::user();
         $user->secret_note = $request->input('secret_note');
-        $user->ssn         = $request->input('ssn');
+        $user->ssn = $request->input('ssn');
         $user->save();
 
         return response()->json(['ok' => true]);
@@ -79,7 +79,7 @@ Route::middleware(['auth', BootPerUserEncryption::class])->group(static function
 
         return response()->json([
             'secret_note' => $user->secret_note,
-            'ssn'         => $user->ssn,
+            'ssn' => $user->ssn,
         ]);
     });
 
@@ -108,7 +108,7 @@ Route::middleware(['auth', BootPerUserEncryption::class])->group(static function
     });
 
     Route::post('/encrypt-file', static function (Request $request, UserEncrypter $crypt) {
-        $input  = $request->input('input');
+        $input = $request->input('input');
         $output = $request->input('output');
         $crypt->encryptFile($input, $output);
 
@@ -116,7 +116,7 @@ Route::middleware(['auth', BootPerUserEncryption::class])->group(static function
     });
 
     Route::post('/decrypt-file', static function (Request $request, UserEncrypter $crypt) {
-        $input  = $request->input('input');
+        $input = $request->input('input');
         $output = $request->input('output');
         $crypt->decryptFile($input, $output);
 

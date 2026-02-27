@@ -65,7 +65,7 @@ trait HasUserEncryption
             /** @phpstan-ignore-next-line */
             if ($model->exists && $model->isDirty('encryption_key') && empty($model->getAttribute('encryption_key'))) {
                 throw new RuntimeException(
-                    'encryption_key cannot be cleared on an existing record. ' .
+                    'encryption_key cannot be cleared on an existing record. '.
                     'Clearing this column makes all encrypted data permanently unreadable.',
                 );
             }
@@ -80,7 +80,7 @@ trait HasUserEncryption
      * Generate a fresh user key wrapped with the user's password.
      * Call at registration when the plaintext password is available.
      *
-     * @return string  Raw 32-byte user key — MUST be passed to encodeEncryptionToken(), then zeroed.
+     * @return string Raw 32-byte user key — MUST be passed to encodeEncryptionToken(), then zeroed.
      */
     public function initUserEncryption(#[SensitiveParameter] string $password): string
     {
@@ -95,20 +95,20 @@ trait HasUserEncryption
      * Useful for web/Filament workflows where the plaintext password is unavailable.
      *
      * @return array{token: string, persisted: bool}
-     *   'token'     — base64url token ready for X-Encryption-Token header.
-     *   'persisted' — true if a NEW blob was generated and set on this model.
-     *                 The caller must call $user->save() if true.
+     *                                               'token'     — base64url token ready for X-Encryption-Token header.
+     *                                               'persisted' — true if a NEW blob was generated and set on this model.
+     *                                               The caller must call $user->save() if true.
      */
     public function issueOrAutoEnrollToken(): array
     {
         $blob = $this->getRawEncryptionKeyBlob();
-        $mgr  = app(UserSecretManager::class);
+        $mgr = app(UserSecretManager::class);
 
         [$appKey, $userId] = [$this->resolveAppKeyRaw(), (string) $this->getAuthIdentifier()];
 
         if ($blob !== null && $mgr->isServerWrapped($blob)) {
             // Already server-enrolled — re-derive
-            $key   = $mgr->unwrapServerBlob($appKey, $userId, $blob);
+            $key = $mgr->unwrapServerBlob($appKey, $userId, $blob);
             $token = $mgr->encodeToken($key);
             sodium_memzero($key);
             sodium_memzero($appKey);
@@ -118,7 +118,7 @@ trait HasUserEncryption
 
         // No blob (or password-wrapped without password) → generate new server-wrapped
         $result = $mgr->generateServerWrapped($appKey, $userId);
-        $token  = $mgr->encodeToken($result['key']);
+        $token = $mgr->encodeToken($result['key']);
         sodium_memzero($result['key']);
         sodium_memzero($appKey);
 
@@ -142,7 +142,7 @@ trait HasUserEncryption
 
         if ($blob === null) {
             // Never enrolled — init now
-            $key   = $this->initUserEncryption($password);
+            $key = $this->initUserEncryption($password);
             $token = app(UserSecretManager::class)->encodeToken($key);
             sodium_memzero($key);
 

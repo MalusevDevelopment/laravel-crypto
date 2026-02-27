@@ -568,8 +568,8 @@ test('PasswordDerivedEncrypted cast returns null gracefully when context is miss
 
 test('auto-enroll writes an encrypted HTTP-only enc_token cookie', function (): void {
     $user = \Workbench\App\Models\User::create([
-        'name'     => 'Cookie User',
-        'email'    => 'cookie1@test.com',
+        'name' => 'Cookie User',
+        'email' => 'cookie1@test.com',
         'password' => \Illuminate\Support\Facades\Hash::make('pass'),
     ]);
 
@@ -594,8 +594,8 @@ test('auto-enroll writes an encrypted HTTP-only enc_token cookie', function (): 
 
 test('web client can use enc_token cookie to decrypt on next request', function (): void {
     $user = \Workbench\App\Models\User::create([
-        'name'     => 'Cookie Round-trip',
-        'email'    => 'cookie2@test.com',
+        'name' => 'Cookie Round-trip',
+        'email' => 'cookie2@test.com',
         'password' => \Illuminate\Support\Facades\Hash::make('pass'),
     ]);
 
@@ -605,8 +605,8 @@ test('web client can use enc_token cookie to decrypt on next request', function 
         ->postJson('/encrypt-string', ['value' => 'cookie roundtrip']);
 
     $encResponse->assertOk();
-    $ciphertext  = $encResponse->json('ciphertext');
-    $cookieObj   = collect($encResponse->headers->getCookies())->first(fn ($c) => $c->getName() === 'enc_token');
+    $ciphertext = $encResponse->json('ciphertext');
+    $cookieObj = collect($encResponse->headers->getCookies())->first(fn ($c) => $c->getName() === 'enc_token');
     expect($cookieObj)->not->toBeNull();
 
     // Step 2 — send the cookie back, no header — must decrypt
@@ -625,7 +625,7 @@ test('cookie takes priority over auto-enroll but header takes priority over cook
     ['user' => $user, 'token' => $headerToken] = registerUser('priority@test.com', 'pass');
 
     // Build a valid encrypted cookie from the token
-    $encrypter  = app(\Illuminate\Contracts\Encryption\Encrypter::class);
+    $encrypter = app(\Illuminate\Contracts\Encryption\Encrypter::class);
     $cookieValue = $encrypter->encryptString($headerToken);
 
     // Request with BOTH header and cookie — header wins
@@ -661,8 +661,8 @@ test('cookie takes priority over auto-enroll but header takes priority over cook
 
 test('tampered enc_token cookie is silently ignored and falls back to auto-derive', function (): void {
     $user = \Workbench\App\Models\User::create([
-        'name'     => 'Tamper User',
-        'email'    => 'tamper@test.com',
+        'name' => 'Tamper User',
+        'email' => 'tamper@test.com',
         'password' => \Illuminate\Support\Facades\Hash::make('pass'),
     ]);
 
@@ -693,8 +693,8 @@ test('cookie_encrypt=false stores the raw base64url token in the cookie', functi
     config(['crypto.per_user.cookie_encrypt' => false]);
 
     $user = \Workbench\App\Models\User::create([
-        'name'     => 'Unencrypted Cookie',
-        'email'    => 'rawcookie@test.com',
+        'name' => 'Unencrypted Cookie',
+        'email' => 'rawcookie@test.com',
         'password' => \Illuminate\Support\Facades\Hash::make('pass'),
     ]);
 
@@ -713,5 +713,3 @@ test('cookie_encrypt=false stores the raw base64url token in the cookie', functi
     // Restore
     config(['crypto.per_user.cookie_encrypt' => true]);
 });
-
-

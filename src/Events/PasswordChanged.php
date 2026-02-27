@@ -28,4 +28,3 @@ final class PasswordChanged
         public readonly string $newPassword,
     ) {}
 }
-

@@ -27,5 +27,3 @@ final readonly class PerUserKeyLoader implements KeyLoader
         return [];
     }
 }
-
-

@@ -31,4 +31,3 @@ interface UserEncryptionContext
     /** Zero the key bytes and clear the internal state. */
     public function clear(): void;
 }
-

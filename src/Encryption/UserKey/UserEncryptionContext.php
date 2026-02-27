@@ -53,4 +53,3 @@ final class UserEncryptionContext implements UserEncryptionContextContract
         $this->clear();
     }
 }
-

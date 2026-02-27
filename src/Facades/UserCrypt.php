@@ -9,13 +9,13 @@ use Illuminate\Support\Facades\Facade;
 /**
  * Facade for the per-user encrypter (UserEncrypter).
  *
- * @method static string  encrypt(mixed $value, bool $serialize = true)
- * @method static mixed   decrypt(string $payload, bool $unserialize = true)
- * @method static string  encryptString(string $value)
- * @method static string  decryptString(string $payload)
- * @method static void    encryptFile(string $inputFilePath, string $outputFilePath)
- * @method static void    decryptFile(string $inputFilePath, string $outputFilePath)
- * @method static bool    hasContext()
+ * @method static string encrypt(mixed $value, bool $serialize = true)
+ * @method static mixed decrypt(string $payload, bool $unserialize = true)
+ * @method static string encryptString(string $value)
+ * @method static string decryptString(string $payload)
+ * @method static void encryptFile(string $inputFilePath, string $outputFilePath)
+ * @method static void decryptFile(string $inputFilePath, string $outputFilePath)
+ * @method static bool hasContext()
  *
  * @see \CodeLieutenant\LaravelCrypto\Encryption\UserKey\UserEncrypter
  */
@@ -26,4 +26,3 @@ final class UserCrypt extends Facade
         return 'user-crypt';
     }
 }
-

@@ -35,9 +35,9 @@ abstract class E2ETestCase extends BaseTestCase
     {
         $app['config']->set('database.default', 'testing');
         $app['config']->set('database.connections.testing', [
-            'driver'   => 'sqlite',
+            'driver' => 'sqlite',
             'database' => ':memory:',
-            'prefix'   => '',
+            'prefix' => '',
         ]);
         $app['config']->set('session.driver', 'array');
         $app['config']->set('auth.guards.web.driver', 'session');
@@ -46,4 +46,3 @@ abstract class E2ETestCase extends BaseTestCase
         $app['config']->set('app.cipher', 'AES-256-GCM');
     }
 }
-

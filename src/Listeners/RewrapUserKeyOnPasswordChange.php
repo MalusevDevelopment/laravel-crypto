@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CodeLieutenant\LaravelCrypto\Listeners;
 
 use CodeLieutenant\LaravelCrypto\Events\PasswordChanged;
-use CodeLieutenant\LaravelCrypto\Traits\HasUserEncryption;
 
 /**
  * Re-wraps the per-user encryption key under the new password when
@@ -30,4 +29,3 @@ final class RewrapUserKeyOnPasswordChange
         $user->save();
     }
 }
-

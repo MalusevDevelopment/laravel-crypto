@@ -46,7 +46,7 @@ final readonly class UserSecretManager
         + SODIUM_CRYPTO_AEAD_XCHACHA20POLY1305_IETF_NPUBBYTES       // 24  — nonce
         + SODIUM_CRYPTO_AEAD_XCHACHA20POLY1305_IETF_KEYBYTES        // 32  — encrypted key
         + SODIUM_CRYPTO_AEAD_XCHACHA20POLY1305_IETF_ABYTES;         // 16  — Poly1305 tag
-        // total = 89
+    // total = 89
 
     // ── Mode 2 (server-wrapped) sizes ────────────────────────────────────────
     public const int SERVER_BLOB_BYTES =
@@ -54,13 +54,16 @@ final readonly class UserSecretManager
         + SODIUM_CRYPTO_AEAD_XCHACHA20POLY1305_IETF_NPUBBYTES       // 24  — nonce
         + SODIUM_CRYPTO_AEAD_XCHACHA20POLY1305_IETF_KEYBYTES        // 32  — encrypted key
         + SODIUM_CRYPTO_AEAD_XCHACHA20POLY1305_IETF_ABYTES;         // 16  — Poly1305 tag
-        // total = 73
+    // total = 73
 
     public const int VERSION_PASSWORD = 0x01;
-    public const int VERSION_SERVER   = 0x02;
 
-    private const int SALT_BYTES         = SODIUM_CRYPTO_PWHASH_SALTBYTES;
-    private const int NONCE_BYTES        = SODIUM_CRYPTO_AEAD_XCHACHA20POLY1305_IETF_NPUBBYTES;
+    public const int VERSION_SERVER = 0x02;
+
+    private const int SALT_BYTES = SODIUM_CRYPTO_PWHASH_SALTBYTES;
+
+    private const int NONCE_BYTES = SODIUM_CRYPTO_AEAD_XCHACHA20POLY1305_IETF_NPUBBYTES;
+
     private const int WRAPPING_KEY_BYTES = SODIUM_CRYPTO_AEAD_XCHACHA20POLY1305_IETF_KEYBYTES;
 
     /** Context string for BLAKE2b key derivation (server-wrap mode). */
@@ -79,12 +82,12 @@ final readonly class UserSecretManager
      * Generate a new user key wrapped with the user's password.
      *
      * @return array{key: string, blob: string}
-     *   'key'  — raw 32-byte user key. Encode as X-Encryption-Token then zero.
-     *   'blob' — 89-byte self-contained blob to persist in `encryption_key`.
+     *                                          'key'  — raw 32-byte user key. Encode as X-Encryption-Token then zero.
+     *                                          'blob' — 89-byte self-contained blob to persist in `encryption_key`.
      */
     public function generate(#[SensitiveParameter] string $password): array
     {
-        $key  = random_bytes(self::KEY_BYTES);
+        $key = random_bytes(self::KEY_BYTES);
         $blob = $this->wrapWithPassword($key, $password);
 
         return ['key' => $key, 'blob' => $blob];
@@ -139,15 +142,15 @@ final readonly class UserSecretManager
      * Generate a new user key wrapped with a server-side HKDF key.
      * Used for auto-enrollment — no password required.
      *
-     * @param  string  $appKey   Raw 32-byte application key (from config('app.key'))
-     * @param  string  $userId   Stable unique user identifier (cast to string)
+     * @param  string  $appKey  Raw 32-byte application key (from config('app.key'))
+     * @param  string  $userId  Stable unique user identifier (cast to string)
      * @return array{key: string, blob: string}
      */
     public function generateServerWrapped(
         #[SensitiveParameter] string $appKey,
         string $userId,
     ): array {
-        $key  = random_bytes(self::KEY_BYTES);
+        $key = random_bytes(self::KEY_BYTES);
         $blob = $this->wrapWithServerKey($key, $appKey, $userId);
 
         return ['key' => $key, 'blob' => $blob];
@@ -201,8 +204,8 @@ final readonly class UserSecretManager
      * The method inspects the version byte and delegates accordingly.
      *
      * @param  string|null  $password  Required for version 0x01 blobs
-     * @param  string|null  $appKey    Required for version 0x02 blobs
-     * @param  string|null  $userId    Required for version 0x02 blobs
+     * @param  string|null  $appKey  Required for version 0x02 blobs
+     * @param  string|null  $userId  Required for version 0x02 blobs
      */
     public function unwrapAny(
         #[SensitiveParameter] string $blob,
@@ -212,8 +215,8 @@ final readonly class UserSecretManager
     ): string {
         return match ($this->readVersion($blob)) {
             self::VERSION_PASSWORD => $this->unwrapPasswordBlob($password ?? throw new RuntimeException('Password required for password-wrapped blob.'), $blob),
-            self::VERSION_SERVER   => $this->doUnwrapServerBlob($appKey ?? throw new RuntimeException('App key required for server-wrapped blob.'), $userId ?? throw new RuntimeException('User ID required for server-wrapped blob.'), $blob),
-            default                => throw new RuntimeException('Unknown blob version.'),
+            self::VERSION_SERVER => $this->doUnwrapServerBlob($appKey ?? throw new RuntimeException('App key required for server-wrapped blob.'), $userId ?? throw new RuntimeException('User ID required for server-wrapped blob.'), $blob),
+            default => throw new RuntimeException('Unknown blob version.'),
         };
     }
 
@@ -268,19 +271,19 @@ final readonly class UserSecretManager
         #[SensitiveParameter] string $key,
         #[SensitiveParameter] string $password,
     ): string {
-        $salt        = random_bytes(self::SALT_BYTES);
-        $nonce       = random_bytes(self::NONCE_BYTES);
+        $salt = random_bytes(self::SALT_BYTES);
+        $nonce = random_bytes(self::NONCE_BYTES);
         $wrappingKey = $this->derivePasswordWrappingKey($password, $salt);
 
         try {
             $ct = sodium_crypto_aead_xchacha20poly1305_ietf_encrypt(
-                $key, $salt . $nonce, $nonce, $wrappingKey,
+                $key, $salt.$nonce, $nonce, $wrappingKey,
             );
         } finally {
             sodium_memzero($wrappingKey);
         }
 
-        return chr(self::VERSION_PASSWORD) . $salt . $nonce . $ct;
+        return chr(self::VERSION_PASSWORD).$salt.$nonce.$ct;
     }
 
     private function unwrapPasswordBlob(
@@ -297,15 +300,15 @@ final readonly class UserSecretManager
             );
         }
 
-        $salt       = substr($inner, 0, self::SALT_BYTES);
-        $nonce      = substr($inner, self::SALT_BYTES, self::NONCE_BYTES);
+        $salt = substr($inner, 0, self::SALT_BYTES);
+        $nonce = substr($inner, self::SALT_BYTES, self::NONCE_BYTES);
         $ciphertext = substr($inner, self::SALT_BYTES + self::NONCE_BYTES);
 
         $wrappingKey = $this->derivePasswordWrappingKey($password, $salt);
 
         try {
             $result = sodium_crypto_aead_xchacha20poly1305_ietf_decrypt(
-                $ciphertext, $salt . $nonce, $nonce, $wrappingKey,
+                $ciphertext, $salt.$nonce, $nonce, $wrappingKey,
             );
         } finally {
             sodium_memzero($wrappingKey);
@@ -346,7 +349,7 @@ final readonly class UserSecretManager
         #[SensitiveParameter] string $appKey,
         string $userId,
     ): string {
-        $nonce       = random_bytes(self::NONCE_BYTES);
+        $nonce = random_bytes(self::NONCE_BYTES);
         $wrappingKey = $this->deriveServerWrappingKey($appKey, $userId);
 
         try {
@@ -357,7 +360,7 @@ final readonly class UserSecretManager
             sodium_memzero($wrappingKey);
         }
 
-        return chr(self::VERSION_SERVER) . $nonce . $ct;
+        return chr(self::VERSION_SERVER).$nonce.$ct;
     }
 
     private function doUnwrapServerBlob(
@@ -365,7 +368,7 @@ final readonly class UserSecretManager
         string $userId,
         #[SensitiveParameter] string $blob,
     ): string {
-        $inner       = substr($blob, 1);
+        $inner = substr($blob, 1);
         $expectedLen = self::SERVER_BLOB_BYTES - 1;
 
         if (strlen($inner) !== $expectedLen) {
@@ -374,7 +377,7 @@ final readonly class UserSecretManager
             );
         }
 
-        $nonce      = substr($inner, 0, self::NONCE_BYTES);
+        $nonce = substr($inner, 0, self::NONCE_BYTES);
         $ciphertext = substr($inner, self::NONCE_BYTES);
 
         $wrappingKey = $this->deriveServerWrappingKey($appKey, $userId);
@@ -412,7 +415,7 @@ final readonly class UserSecretManager
             : sodium_pad($appKey, SODIUM_CRYPTO_GENERICHASH_KEYBYTES);
 
         return sodium_crypto_generichash(
-            self::HKDF_CONTEXT . $userId,
+            self::HKDF_CONTEXT.$userId,
             $key,
             self::WRAPPING_KEY_BYTES,
         );
