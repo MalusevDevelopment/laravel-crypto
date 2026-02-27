@@ -15,6 +15,8 @@ use Illuminate\Support\Facades\Facade;
  * @method static string decryptString(string $payload)
  * @method static void encryptFile(string $inputFilePath, string $outputFilePath)
  * @method static void decryptFile(string $inputFilePath, string $outputFilePath)
+ * @method static string blindIndex(string $value, string $column, bool $normalise = true)
+ * @method static bool verifyBlindIndex(string $storedIndex, string $value, string $column, bool $normalise = true)
  * @method static bool hasContext()
  *
  * @see \CodeLieutenant\LaravelCrypto\Encryption\UserKey\UserEncrypter

@@ -25,6 +25,7 @@ use CodeLieutenant\LaravelCrypto\Encryption\Providers\AesGcm256Encrypter;
 use CodeLieutenant\LaravelCrypto\Encryption\Providers\OpenSSLEncrypter;
 use CodeLieutenant\LaravelCrypto\Encryption\Providers\SecretBoxEncrypter;
 use CodeLieutenant\LaravelCrypto\Encryption\Providers\XChaCha20Poly1305Encrypter;
+use CodeLieutenant\LaravelCrypto\Encryption\UserKey\BlindIndex;
 use CodeLieutenant\LaravelCrypto\Encryption\UserKey\UserEncrypter;
 use CodeLieutenant\LaravelCrypto\Encryption\UserKey\UserEncryptionContext;
 use CodeLieutenant\LaravelCrypto\Encryption\UserKey\UserSecretManager;
@@ -177,8 +178,17 @@ class ServiceProvider extends EncryptionServiceProvider
             return new UserEncrypter(
                 context: $app->make(UserEncryptionContextContract::class),
                 fileEncrypter: $fileEncrypter,
+                blindIndex: $app->make(BlindIndex::class),
             );
         });
+
+        // BlindIndex — scoped (reads from per-request context)
+        $this->app->scoped(
+            BlindIndex::class,
+            static fn (Application $app) => new BlindIndex(
+                $app->make(UserEncryptionContextContract::class),
+            ),
+        );
 
         // 'user-crypt' alias — used by the UserCrypt facade
         $this->app->alias(UserEncrypter::class, 'user-crypt');

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Workbench\App\Models;
 
 use CodeLieutenant\LaravelCrypto\Casts\UserEncrypted;
+use CodeLieutenant\LaravelCrypto\Casts\UserEncryptedWithIndex;
 use CodeLieutenant\LaravelCrypto\Traits\HasUserEncryption;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
@@ -13,9 +14,10 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
  * @property string $name
  * @property string $email
  * @property string $password
- * @property string|null $encryption_key Self-contained 88-byte blob
- * @property string|null $secret_note Encrypted with PasswordDerivedEncrypted cast
- * @property string|null $ssn Encrypted with PasswordDerivedEncrypted cast
+ * @property string|null $encryption_key Self-contained 89-byte blob
+ * @property string|null $secret_note Encrypted with UserEncrypted cast
+ * @property string|null $ssn Encrypted + blind-indexed with UserEncryptedWithIndex cast
+ * @property string|null $ssn_index Blind index for SSN (binary 32 bytes, managed by cast)
  */
 class User extends Authenticatable
 {
@@ -25,13 +27,14 @@ class User extends Authenticatable
 
     protected $fillable = ['name', 'email', 'password'];
 
-    protected $hidden = ['password', 'encryption_key'];
+    protected $hidden = ['password', 'encryption_key', 'ssn_index'];
 
     protected function casts(): array
     {
         return [
             'secret_note' => UserEncrypted::class,
-            'ssn' => UserEncrypted::class,
+            // ssn_index is written automatically by this cast
+            'ssn' => UserEncryptedWithIndex::class.':ssn_index',
         ];
     }
 }

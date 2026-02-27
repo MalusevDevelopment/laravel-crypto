@@ -11,6 +11,8 @@ use CodeLieutenant\LaravelCrypto\Exceptions\MissingEncryptionContextException;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Contracts\Encryption\EncryptException;
 use Illuminate\Encryption\Encrypter as LaravelEncrypter;
+use SensitiveParameter;
+use SodiumException;
 
 /**
  * Primary developer-facing API for per-user encryption.
@@ -32,14 +34,23 @@ use Illuminate\Encryption\Encrypter as LaravelEncrypter;
  *   UserCrypt::encryptFile('/path/to/input.pdf', '/path/to/output.enc');
  *   UserCrypt::decryptFile('/path/to/output.enc', '/path/to/restored.pdf');
  *
+ * ## Blind index (searchable encrypted fields)
+ *
+ *   // Compute a 32-byte binary index for storage:
+ *   $index = UserCrypt::blindIndex($ssn, 'ssn');
+ *
+ *   // Scope query — no decryption needed:
+ *   User::whereUserEncrypted('ssn', $searchSsn)->get();
+ *
  * The same XChaCha20-Poly1305 secretstream used by Crypt::encryptFile is
  * applied — only the key is swapped for the per-user key from the context.
  */
-final class UserEncrypter
+final readonly class UserEncrypter
 {
     public function __construct(
-        private readonly UserEncryptionContextContract $context,
-        private readonly FileEncrypter $fileEncrypter = new SecretStreamFileEncrypter,
+        private UserEncryptionContextContract $context,
+        private FileEncrypter $fileEncrypter = new SecretStreamFileEncrypter,
+        private ?BlindIndex $blindIndex = null,
     ) {}
 
     // ── Value encryption ─────────────────────────────────────────────────
@@ -97,6 +108,41 @@ final class UserEncrypter
         $this->fileEncrypter->decryptFile($key, $inputFilePath, $outputFilePath);
     }
 
+    // ── Blind index ───────────────────────────────────────────────────────
+
+    /**
+     * Compute a blind index for a plaintext value and column name.
+     *
+     * Returns a raw 32-byte binary string — store in a binary(32) column
+     * named `{column}_index` (e.g. `ssn_index`).
+     *
+     * @param  string  $value  The plaintext value to index
+     * @param  string  $column  Column name used for per-column key derivation
+     * @param  bool  $normalise  Lowercase + trim before hashing (default: true)
+     *
+     * @throws MissingEncryptionContextException|SodiumException when no key is loaded
+     */
+    public function blindIndex(
+        #[SensitiveParameter] string $value,
+        string $column,
+        bool $normalise = true,
+    ): string {
+        return $this->getBlindIndex()->compute($value, $column, $normalise);
+    }
+
+    /**
+     * Verify that a stored blind index matches a plaintext value.
+     * Uses constant-time comparison.
+     */
+    public function verifyBlindIndex(
+        string $storedIndex,
+        #[SensitiveParameter] string $value,
+        string $column,
+        bool $normalise = true,
+    ): bool {
+        return $this->getBlindIndex()->verify($storedIndex, $value, $column, $normalise);
+    }
+
     // ── Context ───────────────────────────────────────────────────────────
 
     /** True if a key is loaded for the current request. */
@@ -106,6 +152,11 @@ final class UserEncrypter
     }
 
     // ── Private ───────────────────────────────────────────────────────────
+
+    private function getBlindIndex(): BlindIndex
+    {
+        return $this->blindIndex ?? new BlindIndex($this->context);
+    }
 
     private function makeEncrypter(): LaravelEncrypter
     {

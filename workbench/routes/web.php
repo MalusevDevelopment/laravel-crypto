@@ -137,4 +137,29 @@ Route::middleware(['auth', BootPerUserEncryption::class])->group(static function
 
         return response()->json(['ok' => true])->header('X-Encryption-Token', $token);
     });
+
+    /**
+     * Search users by encrypted SSN using the blind index.
+     * No SSNs are decrypted during the search — only the index is compared.
+     */
+    Route::get('/search-by-ssn', static function (Request $request) {
+        $ssn = $request->query('ssn');
+
+        $users = User::whereUserEncrypted('ssn', $ssn)->get(['id', 'name', 'email']);
+
+        return response()->json($users);
+    });
+
+    /**
+     * Compute the blind index for an arbitrary value + column name.
+     * Useful for testing / debugging.
+     */
+    Route::post('/blind-index', static function (Request $request, UserEncrypter $crypt) {
+        return response()->json([
+            'index' => base64_encode($crypt->blindIndex(
+                $request->input('value'),
+                $request->input('column'),
+            )),
+        ]);
+    });
 });

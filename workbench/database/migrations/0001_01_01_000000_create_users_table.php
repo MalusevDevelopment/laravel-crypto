@@ -19,6 +19,8 @@ return new class extends Migration
             $table->binary('encryption_key', length: 89)->nullable();
             $table->text('secret_note')->nullable();
             $table->text('ssn')->nullable();
+            // Blind index for SSN — enables WHERE ssn_index = ? without decryption
+            $table->binary('ssn_index', length: 32)->nullable()->index();
             $table->rememberToken();
             $table->timestamps();
         });

@@ -4,10 +4,15 @@ declare(strict_types=1);
 
 namespace CodeLieutenant\LaravelCrypto\Traits;
 
+use CodeLieutenant\LaravelCrypto\Encryption\UserKey\UserEncrypter;
 use CodeLieutenant\LaravelCrypto\Encryption\UserKey\UserSecretManager;
+use CodeLieutenant\LaravelCrypto\Exceptions\MissingEncryptionContextException;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Schema\Blueprint;
 use RuntimeException;
 use SensitiveParameter;
+use SodiumException;
 
 /**
  * Adds per-user encryption to an Eloquent model (typically User).
@@ -214,6 +219,8 @@ trait HasUserEncryption
      * Encode a raw user key to base64url and zero it in place.
      *
      * @param  string  $rawKey  Will be zeroed after encoding
+     *
+     * @throws SodiumException
      */
     public function encodeEncryptionToken(#[SensitiveParameter] string &$rawKey): string
     {
@@ -234,6 +241,70 @@ trait HasUserEncryption
     public function hasUserEncryptionInitialised(): bool
     {
         return $this->getRawEncryptionKeyBlob() !== null;
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Blind index — searchable encrypted fields
+    // ─────────────────────────────────────────────────────────────────────────
+
+    /**
+     * Scope: find rows where an encrypted column matches a plaintext value.
+     *
+     * Requires that the column uses UserEncryptedWithIndex cast and that the
+     * corresponding `{column}_index` column exists in the table.
+     *
+     * ## Example
+     *
+     *   User::whereUserEncrypted('ssn', '123-45-6789')->first();
+     *   User::whereUserEncrypted('email', 'alice@example.com', 'email_index')->first();
+     *
+     * @param  string  $column  Encrypted column name (e.g. 'ssn')
+     * @param  string  $value  Plaintext value to search for
+     * @param  string|null  $indexColumn  Index column name; defaults to "{column}_index"
+     * @param  bool  $normalise  Must match the normalise setting on the cast
+     *
+     * @throws MissingEncryptionContextException|SodiumException
+     */
+    public function scopeWhereUserEncrypted(
+        Builder $query,
+        string $column,
+        string $value,
+        ?string $indexColumn = null,
+        bool $normalise = true,
+    ): Builder {
+        $indexCol = $indexColumn ?? $column.'_index';
+        $index = app(UserEncrypter::class)->blindIndex($value, $column, $normalise);
+
+        return $query->where($indexCol, $index);
+    }
+
+    /**
+     * Migration helper: add the blind index column for an encrypted field.
+     *
+     * Call inside a Schema::table() or Schema::create() callback:
+     *
+     *   Schema::table('users', function (Blueprint $table) {
+     *       HasUserEncryption::addBlindIndexColumn($table, 'ssn');
+     *       // Adds: $table->binary('ssn_index', length: 32)->nullable()->index()
+     *   });
+     *
+     * @param  string  $column  The encrypted column name (e.g. 'ssn')
+     * @param  string|null  $indexColumn  Override index column name; defaults to "{column}_index"
+     * @param  bool  $nullable  Whether the index column should be nullable
+     */
+    public static function addBlindIndexColumn(
+        Blueprint $table,
+        string $column,
+        ?string $indexColumn = null,
+        bool $nullable = true,
+    ): void {
+        $col = $table->binary($indexColumn ?? $column.'_index', length: 32);
+
+        if ($nullable) {
+            $col->nullable();
+        }
+
+        $col->index();
     }
 
     // ─────────────────────────────────────────────────────────────────────────
