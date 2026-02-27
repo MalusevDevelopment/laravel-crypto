@@ -6,6 +6,7 @@ namespace CodeLieutenant\LaravelCrypto;
 
 use CodeLieutenant\LaravelCrypto\Console\GenerateCryptoKeysCommand;
 use CodeLieutenant\LaravelCrypto\Contracts\Encoder;
+use CodeLieutenant\LaravelCrypto\Contracts\EncrypterProvider;
 use CodeLieutenant\LaravelCrypto\Contracts\Hashing;
 use CodeLieutenant\LaravelCrypto\Contracts\KeyLoader;
 use CodeLieutenant\LaravelCrypto\Contracts\PublicKeySigning;
@@ -163,8 +164,20 @@ class ServiceProvider extends EncryptionServiceProvider
 
         // UserEncrypter — scoped (reads from per-request context)
         $this->app->scoped(UserEncrypter::class, static function (Application $app): UserEncrypter {
+            $fileDriver = $app->make(Repository::class)->get(
+                'crypto.file_encryption.driver',
+                SecretStreamFileEncrypter::class,
+            );
+
+            $fileEncrypter = match ($fileDriver) {
+                NativeFileEncrypter::class, 'native'       => new NativeFileEncrypter($app->make(\CodeLieutenant\LaravelCrypto\Contracts\EncrypterProvider::class)),
+                XSalsaHmacFileEncrypter::class, 'xsalsa-hmac' => new XSalsaHmacFileEncrypter,
+                default                                    => new SecretStreamFileEncrypter,
+            };
+
             return new UserEncrypter(
                 context: $app->make(UserEncryptionContextContract::class),
+                fileEncrypter: $fileEncrypter,
             );
         });
 

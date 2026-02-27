@@ -43,6 +43,24 @@ Route::post('/login', static function (Request $request) {
     return response()->json(['id' => $user->id])->header('X-Encryption-Token', $token);
 });
 
+/**
+ * Session-only login — does NOT require or issue an encryption token.
+ * Simulates a plain web login (Filament / Breeze / Jetstream).
+ * The BootPerUserEncryption middleware will auto-enroll the user on the first
+ * subsequent authenticated request.
+ */
+Route::post('/login-session', static function (Request $request) {
+    $user = User::where('email', $request->input('email'))->first();
+
+    if (! $user || ! Hash::check($request->input('password'), $user->password)) {
+        return response()->json(['message' => 'Unauthorized'], 401);
+    }
+
+    Auth::login($user);
+
+    return response()->json(['id' => $user->id]);
+});
+
 // ── Authenticated + per-user encryption ──────────────────────────────────
 
 Route::middleware(['auth', BootPerUserEncryption::class])->group(static function (): void {
@@ -87,6 +105,22 @@ Route::middleware(['auth', BootPerUserEncryption::class])->group(static function
         return response()->json([
             'plaintext' => UserCrypt::decryptString($request->input('ciphertext')),
         ]);
+    });
+
+    Route::post('/encrypt-file', static function (Request $request, UserEncrypter $crypt) {
+        $input  = $request->input('input');
+        $output = $request->input('output');
+        $crypt->encryptFile($input, $output);
+
+        return response()->json(['ok' => true]);
+    });
+
+    Route::post('/decrypt-file', static function (Request $request, UserEncrypter $crypt) {
+        $input  = $request->input('input');
+        $output = $request->input('output');
+        $crypt->decryptFile($input, $output);
+
+        return response()->json(['ok' => true]);
     });
 
     Route::post('/change-password', static function (Request $request) {

@@ -15,8 +15,8 @@ return new class extends Migration
             $table->string('name');
             $table->string('email')->unique();
             $table->string('password');
-            // Per-user encryption blob: salt(16)+nonce(24)+ciphertext(32)+tag(16) = 88 bytes
-            $table->binary('encryption_key', length: 88)->nullable();
+            // Per-user encryption blob: version(1)+salt(16)+nonce(24)+ciphertext(32)+tag(16) = 89 bytes max
+            $table->binary('encryption_key', length: 89)->nullable();
             $table->text('secret_note')->nullable();
             $table->text('ssn')->nullable();
             $table->rememberToken();
