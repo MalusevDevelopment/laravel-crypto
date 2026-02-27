@@ -1,18 +1,106 @@
 <?php
 
+declare(strict_types=1);
+
+use CodeLieutenant\LaravelCrypto\Encryption\UserKey\UserEncrypter;
+use CodeLieutenant\LaravelCrypto\Facades\UserCrypt;
+use CodeLieutenant\LaravelCrypto\Http\Middleware\BootPerUserEncryption;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Route;
+use Workbench\App\Models\User;
 
-/*
-|--------------------------------------------------------------------------
-| Web Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "web" middleware group. Make something great!
-|
-*/
+// ── Public ────────────────────────────────────────────────────────────────
 
-Route::get('/', function () {
-    return view('welcome');
+Route::post('/register', static function (Request $request) {
+    $user = User::create([
+        'name'     => $request->input('name', 'Test'),
+        'email'    => $request->input('email'),
+        'password' => Hash::make($request->input('password')),
+    ]);
+
+    $rawKey = $user->initUserEncryption($request->input('password'));
+    $user->save();
+
+    $token = $user->encodeEncryptionToken($rawKey);
+
+    return response()->json(['id' => $user->id, 'email' => $user->email], 201)
+        ->header('X-Encryption-Token', $token);
+});
+
+Route::post('/login', static function (Request $request) {
+    $user = User::where('email', $request->input('email'))->first();
+
+    if (! $user || ! Hash::check($request->input('password'), $user->password)) {
+        return response()->json(['message' => 'Unauthorized'], 401);
+    }
+
+    Auth::login($user);
+
+    $token = $user->issueEncryptionToken($request->input('password'));
+
+    return response()->json(['id' => $user->id])->header('X-Encryption-Token', $token);
+});
+
+// ── Authenticated + per-user encryption ──────────────────────────────────
+
+Route::middleware(['auth', BootPerUserEncryption::class])->group(static function (): void {
+
+    Route::post('/profile/secrets', static function (Request $request) {
+        $user = Auth::user();
+        $user->secret_note = $request->input('secret_note');
+        $user->ssn         = $request->input('ssn');
+        $user->save();
+
+        return response()->json(['ok' => true]);
+    });
+
+    Route::get('/profile/secrets', static function () {
+        $user = User::findOrFail(Auth::id());
+
+        return response()->json([
+            'secret_note' => $user->secret_note,
+            'ssn'         => $user->ssn,
+        ]);
+    });
+
+    Route::post('/encrypt', static function (Request $request, UserEncrypter $crypt) {
+        return response()->json([
+            'ciphertext' => $crypt->encrypt($request->input('value')),
+        ]);
+    });
+
+    Route::post('/decrypt', static function (Request $request, UserEncrypter $crypt) {
+        return response()->json([
+            'plaintext' => $crypt->decrypt($request->input('ciphertext')),
+        ]);
+    });
+
+    Route::post('/encrypt-string', static function (Request $request) {
+        return response()->json([
+            'ciphertext' => UserCrypt::encryptString($request->input('value')),
+        ]);
+    });
+
+    Route::post('/decrypt-string', static function (Request $request) {
+        return response()->json([
+            'plaintext' => UserCrypt::decryptString($request->input('ciphertext')),
+        ]);
+    });
+
+    Route::post('/change-password', static function (Request $request) {
+        $user = Auth::user();
+
+        $user->rewrapUserEncryption(
+            $request->input('current_password'),
+            $request->input('new_password'),
+        );
+        $user->password = Hash::make($request->input('new_password'));
+        $user->save();
+
+        $token = $user->issueEncryptionToken($request->input('new_password'));
+
+        return response()->json(['ok' => true])->header('X-Encryption-Token', $token);
+    });
 });

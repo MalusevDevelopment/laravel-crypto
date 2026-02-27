@@ -34,11 +34,17 @@ use CodeLieutenant\LaravelCrypto\Keys\Generators\Blake2BHashingKeyGenerator;
 use CodeLieutenant\LaravelCrypto\Keys\Generators\EdDSASignerKeyGenerator;
 use CodeLieutenant\LaravelCrypto\Keys\Generators\FileKeyGenerator;
 use CodeLieutenant\LaravelCrypto\Keys\Generators\HmacKeyGenerator;
+use CodeLieutenant\LaravelCrypto\Contracts\UserEncryptionContext as UserEncryptionContextContract;
+use CodeLieutenant\LaravelCrypto\Encryption\UserKey\UserEncryptionContext;
+use CodeLieutenant\LaravelCrypto\Encryption\UserKey\UserEncrypter;
+use CodeLieutenant\LaravelCrypto\Encryption\UserKey\UserSecretManager;
+use CodeLieutenant\LaravelCrypto\Events\PasswordChanged;
 use CodeLieutenant\LaravelCrypto\Keys\Loaders\AppKeyLoader;
 use CodeLieutenant\LaravelCrypto\Keys\Loaders\Blake2BHashingKeyLoader;
 use CodeLieutenant\LaravelCrypto\Keys\Loaders\EdDSASignerKeyLoader;
 use CodeLieutenant\LaravelCrypto\Keys\Loaders\FileKeyLoader;
 use CodeLieutenant\LaravelCrypto\Keys\Loaders\HmacKeyLoader;
+use CodeLieutenant\LaravelCrypto\Listeners\RewrapUserKeyOnPasswordChange;
 use CodeLieutenant\LaravelCrypto\Signing\EdDSA\EdDSA;
 use CodeLieutenant\LaravelCrypto\Signing\Hmac\Blake2b as HmacBlake2b;
 use CodeLieutenant\LaravelCrypto\Signing\Hmac\Sha256 as HmacSha256;
@@ -65,7 +71,15 @@ class ServiceProvider extends EncryptionServiceProvider
     {
         if ($this->app->runningInConsole()) {
             $this->publishes([$this->getConfigPath() => config_path('crypto.php')]);
+            $this->publishes([
+                __DIR__.'/../database/migrations' => database_path('migrations'),
+            ], 'laravel-crypto-migrations');
         }
+
+        $this->app['events']->listen(
+            PasswordChanged::class,
+            RewrapUserKeyOnPasswordChange::class,
+        );
 
         Crypt::macro('encryptFile', function (string $inputFilePath, string $outputFilePath): void {
             /** @var LibEncrypter $this */
@@ -129,7 +143,33 @@ class ServiceProvider extends EncryptionServiceProvider
         $this->registerKeyLoaders();
         $this->registerSigners();
         $this->registerHashers();
+        $this->registerPerUserEncryption();
         parent::register();
+    }
+
+    protected function registerPerUserEncryption(): void
+    {
+        // Request-scoped context — one instance per HTTP request
+        $this->app->scoped(UserEncryptionContextContract::class, UserEncryptionContext::class);
+        $this->app->scoped(UserEncryptionContext::class, UserEncryptionContext::class);
+
+        // UserSecretManager — stateless, safe as singleton
+        $this->app->singleton(UserSecretManager::class, static function (): UserSecretManager {
+            return new UserSecretManager(
+                opsLimit: (int) config('crypto.per_user.opslimit', SODIUM_CRYPTO_PWHASH_OPSLIMIT_INTERACTIVE),
+                memLimit: (int) config('crypto.per_user.memlimit', SODIUM_CRYPTO_PWHASH_MEMLIMIT_INTERACTIVE),
+            );
+        });
+
+        // UserEncrypter — scoped (reads from per-request context)
+        $this->app->scoped(UserEncrypter::class, static function (Application $app): UserEncrypter {
+            return new UserEncrypter(
+                context: $app->make(UserEncryptionContextContract::class),
+            );
+        });
+
+        // 'user-crypt' alias — used by the UserCrypt facade
+        $this->app->alias(UserEncrypter::class, 'user-crypt');
     }
 
     protected function registerEncoder(): void
