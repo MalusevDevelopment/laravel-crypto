@@ -243,10 +243,6 @@ trait HasUserEncryption
         return $this->getRawEncryptionKeyBlob() !== null;
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Blind index — searchable encrypted fields
-    // ─────────────────────────────────────────────────────────────────────────
-
     /**
      * Scope: find rows where an encrypted column matches a plaintext value.
      *
@@ -262,6 +258,8 @@ trait HasUserEncryption
      * @param  string  $value  Plaintext value to search for
      * @param  string|null  $indexColumn  Index column name; defaults to "{column}_index"
      * @param  bool  $normalise  Must match the normalise setting on the cast
+     * @param  string  $mode  Indexing mode: 'user' (default) or 'global' / 'uniquePerTable'
+     * @param  array  $context  Additional context values to include in the hash
      *
      * @throws MissingEncryptionContextException|SodiumException
      */
@@ -271,15 +269,23 @@ trait HasUserEncryption
         string $value,
         ?string $indexColumn = null,
         bool $normalise = true,
+        string $mode = 'user',
+        array $context = [],
     ): Builder {
         $indexCol = $indexColumn ?? $column.'_index';
-        $index = app(UserEncrypter::class)->blindIndex($value, $column, $normalise);
+        $encrypter = app(UserEncrypter::class);
+
+        $index = ($mode === 'global' || $mode === 'uniquePerTable')
+            ? $encrypter->globalBlindIndex($value, $column, $normalise, $context)
+            : $encrypter->blindIndex($value, $column, $normalise, $context);
 
         return $query->where($indexCol, $index);
     }
 
     /**
      * Migration helper: add the blind index column for an encrypted field.
+     *
+     * @deprecated Use $table->blindIndex('column') directly instead.
      *
      * Call inside a Schema::table() or Schema::create() callback:
      *
@@ -298,13 +304,13 @@ trait HasUserEncryption
         ?string $indexColumn = null,
         bool $nullable = true,
     ): void {
-        $col = $table->binary($indexColumn ?? $column.'_index', length: 32);
+        $table->blindIndex($indexColumn ?? $column);
 
         if ($nullable) {
-            $col->nullable();
+            $table->getColumns()[count($table->getColumns()) - 1]->nullable();
         }
 
-        $col->index();
+        $table->getColumns()[count($table->getColumns()) - 1]->index();
     }
 
     // ─────────────────────────────────────────────────────────────────────────

@@ -16,10 +16,21 @@ use Illuminate\Support\Facades\Facade;
  * @method static void encryptFile(string $inputFilePath, string $outputFilePath)
  * @method static void decryptFile(string $inputFilePath, string $outputFilePath)
  * @method static string blindIndex(string $value, string $column, bool $normalise = true)
+ * @method static string globalBlindIndex(string $value, string $column, bool $normalise = true)
  * @method static bool verifyBlindIndex(string $storedIndex, string $value, string $column, bool $normalise = true)
+ * @method static bool verifyGlobalBlindIndex(string $storedIndex, string $value, string $column, bool $normalise = true)
  * @method static bool hasContext()
  *
+ * ## JSON helpers (use these instead of manual json_encode + encryptString)
+ *
+ *   UserCrypt::encrypt(['key' => 'value'])           // serialize = true → PHP-serialized
+ *   UserCrypt::encryptString(json_encode($array))    // manual JSON
+ *
+ *   Or use the UserEncryptedJson cast which handles encoding automatically.
+ *
  * @see \CodeLieutenant\LaravelCrypto\Encryption\UserKey\UserEncrypter
+ * @see \CodeLieutenant\LaravelCrypto\Casts\UserEncryptedJson
+ * @see \CodeLieutenant\LaravelCrypto\Casts\UserEncryptedJsonWithIndex
  */
 final class UserCrypt extends Facade
 {

@@ -12,10 +12,10 @@ use CodeLieutenant\LaravelCrypto\Exceptions\MissingEncryptionContextException;
 
 describe('BlindIndex', function (): void {
     beforeEach(function (): void {
-        $this->ctx   = new UserEncryptionContext;
-        $this->key   = random_bytes(SODIUM_CRYPTO_KDF_KEYBYTES); // 32 bytes
+        $this->ctx = new UserEncryptionContext;
+        $this->key = random_bytes(SODIUM_CRYPTO_KDF_KEYBYTES); // 32 bytes
         $this->ctx->set($this->key);
-        $this->bi    = new BlindIndex($this->ctx);
+        $this->bi = new BlindIndex($this->ctx);
     });
 
     afterEach(function (): void {
@@ -46,7 +46,7 @@ describe('BlindIndex', function (): void {
     });
 
     test('compute() is per-column — same value in different columns gives different index', function (): void {
-        $ssnIdx   = $this->bi->compute('alice@example.com', 'ssn');
+        $ssnIdx = $this->bi->compute('alice@example.com', 'ssn');
         $emailIdx = $this->bi->compute('alice@example.com', 'email');
         expect($ssnIdx)->not->toBe($emailIdx);
     });
@@ -84,8 +84,18 @@ describe('BlindIndex', function (): void {
 
     test('compute() throws MissingEncryptionContextException when context is empty', function (): void {
         $emptyCtx = new UserEncryptionContext;
-        $bi       = new BlindIndex($emptyCtx);
+        $bi = new BlindIndex($emptyCtx);
         expect(fn () => $bi->compute('value', 'col'))->toThrow(MissingEncryptionContextException::class);
+    });
+
+    test('compute() with optional key — different user keys produce same index if same optional key is used', function (): void {
+        $key2 = random_bytes(32);
+        $bi2 = new BlindIndex(new UserEncryptionContext);
+
+        $a = $this->bi->compute('same-value', 'ssn', true, $key2);
+        $b = $bi2->compute('same-value', 'ssn', true, $key2);
+
+        expect($a)->toBe($b);
     });
 
     test('column names longer than 8 bytes produce distinct indexes (no truncation collision)', function (): void {
@@ -95,5 +105,16 @@ describe('BlindIndex', function (): void {
         $b = $this->bi->compute('v', 'very_long_column_name_b');
         expect($a)->not->toBe($b);
     });
-});
 
+    test('compute() with context — different context values produce different indexes', function (): void {
+        $a = $this->bi->compute('value', 'col', true, null, ['tenant' => '1']);
+        $b = $this->bi->compute('value', 'col', true, null, ['tenant' => '2']);
+        expect($a)->not->toBe($b);
+    });
+
+    test('compute() with context — same context values produce same index', function (): void {
+        $a = $this->bi->compute('value', 'col', true, null, ['1', '2']);
+        $b = $this->bi->compute('value', 'col', true, null, ['1', '2']);
+        expect($a)->toBe($b);
+    });
+});

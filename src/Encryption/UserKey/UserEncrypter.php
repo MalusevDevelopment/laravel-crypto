@@ -8,6 +8,7 @@ use CodeLieutenant\LaravelCrypto\Contracts\FileEncrypter;
 use CodeLieutenant\LaravelCrypto\Contracts\UserEncryptionContext as UserEncryptionContextContract;
 use CodeLieutenant\LaravelCrypto\Encryption\File\SecretStreamFileEncrypter;
 use CodeLieutenant\LaravelCrypto\Exceptions\MissingEncryptionContextException;
+use CodeLieutenant\LaravelCrypto\Keys\Loaders\AppKeyLoader;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Contracts\Encryption\EncryptException;
 use Illuminate\Encryption\Encrypter as LaravelEncrypter;
@@ -126,8 +127,27 @@ final readonly class UserEncrypter
         #[SensitiveParameter] string $value,
         string $column,
         bool $normalise = true,
+        array $context = [],
     ): string {
-        return $this->getBlindIndex()->compute($value, $column, $normalise);
+        return $this->getBlindIndex()->compute($value, $column, $normalise, context: $context);
+    }
+
+    /**
+     * Compute a global blind index for a plaintext value and column name.
+     *
+     * This uses the application's global key (APP_KEY) instead of the user's
+     * request-scoped key.  Use this for fields that require a uniqueness
+     * constraint across the entire table.
+     */
+    public function globalBlindIndex(
+        #[SensitiveParameter] string $value,
+        string $column,
+        bool $normalise = true,
+        array $context = [],
+    ): string {
+        $appKey = app(AppKeyLoader::class)->getKey();
+
+        return $this->getBlindIndex()->compute($value, $column, $normalise, (string) $appKey, $context);
     }
 
     /**
@@ -139,8 +159,24 @@ final readonly class UserEncrypter
         #[SensitiveParameter] string $value,
         string $column,
         bool $normalise = true,
+        array $context = [],
     ): bool {
-        return $this->getBlindIndex()->verify($storedIndex, $value, $column, $normalise);
+        return $this->getBlindIndex()->verify($storedIndex, $value, $column, $normalise, context: $context);
+    }
+
+    /**
+     * Verify that a stored global blind index matches a plaintext value.
+     */
+    public function verifyGlobalBlindIndex(
+        string $storedIndex,
+        #[SensitiveParameter] string $value,
+        string $column,
+        bool $normalise = true,
+        array $context = [],
+    ): bool {
+        $appKey = app(\CodeLieutenant\LaravelCrypto\Keys\Loaders\AppKeyLoader::class)->getKey();
+
+        return $this->getBlindIndex()->verify($storedIndex, $value, $column, $normalise, (string) $appKey, $context);
     }
 
     // ── Context ───────────────────────────────────────────────────────────

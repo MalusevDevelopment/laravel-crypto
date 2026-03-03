@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Route;
 use Workbench\App\Models\User;
+use Workbench\App\Models\UserSecret;
 
 // ── Public ────────────────────────────────────────────────────────────────
 
@@ -80,6 +81,34 @@ Route::middleware(['auth', BootPerUserEncryption::class])->group(static function
         return response()->json([
             'secret_note' => $user->secret_note,
             'ssn' => $user->ssn,
+        ]);
+    });
+
+    Route::post('/profile/json', static function (Request $request) {
+        $user = Auth::user() ?? throw new RuntimeException('No authenticated user');
+
+        if ($request->has('medical_history')) {
+            $user->medical_history = $request->input('medical_history'); // array
+        }
+        if ($request->has('address')) {
+            $user->address = $request->input('address'); // will be stdClass on read
+        }
+        if ($request->has('profile')) {
+            $user->profile = $request->input('profile'); // array + blind-indexed on 'email'
+        }
+
+        $user->save();
+
+        return response()->json(['ok' => true]);
+    });
+
+    Route::get('/profile/json', static function () {
+        $user = User::findOrFail(Auth::id());
+
+        return response()->json([
+            'medical_history' => $user->medical_history,
+            'address' => (array) $user->address,   // stdClass → array for JSON comparison
+            'profile' => $user->profile,
         ]);
     });
 
@@ -161,5 +190,29 @@ Route::middleware(['auth', BootPerUserEncryption::class])->group(static function
                 $request->input('column'),
             )),
         ]);
+    });
+
+    Route::post('/user-secrets', static function (Request $request) {
+        $secret = UserSecret::create([
+            'user_id' => Auth::id(),
+            'label' => $request->input('label'),
+            'secret_value' => $request->input('value'),
+        ]);
+
+        $data = $secret->makeVisible('secret_value_index')->toArray();
+        $data['secret_value_index'] = base64_encode($data['secret_value_index']);
+
+        return response()->json($data, 201);
+    });
+
+    Route::get('/user-secrets/search', static function (Request $request) {
+        $label = $request->query('label');
+        $value = $request->query('value');
+
+        $secrets = UserSecret::where('label', $label)
+            ->whereUserEncrypted('secret_value', $value, indexColumn: 'secret_value_index', context: [$label])
+            ->get();
+
+        return response()->json($secrets);
     });
 });

@@ -7,6 +7,7 @@ namespace CodeLieutenant\LaravelCrypto\Casts;
 use CodeLieutenant\LaravelCrypto\Encryption\UserKey\UserEncrypter;
 use Illuminate\Contracts\Database\Eloquent\CastsAttributes;
 use Illuminate\Database\Eloquent\Model;
+use SodiumException;
 
 /**
  * Eloquent cast that encrypts/decrypts a field **and** maintains a blind
@@ -52,10 +53,14 @@ final readonly class UserEncryptedWithIndex implements CastsAttributes
      * @param  string  $indexColumn  The DB column that stores the blind index
      *                               (e.g. 'ssn_index')
      * @param  bool  $normalise  Lowercase + trim before hashing (default: true)
+     * @param  string  $mode  Indexing mode: 'user' (default) or 'global' / 'uniquePerTable'
+     * @param  string|null  $context  Comma-separated list of columns to include in the hash
      */
     public function __construct(
         private string $indexColumn,
         private bool $normalise = true,
+        private string $mode = 'user',
+        private ?string $context = null,
     ) {}
 
     /**
@@ -78,6 +83,8 @@ final readonly class UserEncryptedWithIndex implements CastsAttributes
      * index column in the same UPDATE/INSERT.
      *
      * @return array<string, string|null>
+     *
+     * @throws SodiumException
      */
     public function set(Model $model, string $key, mixed $value, array $attributes): array
     {
@@ -91,9 +98,20 @@ final readonly class UserEncryptedWithIndex implements CastsAttributes
         $encrypter = app(UserEncrypter::class);
         $plaintext = (string) $value;
 
+        $contextValues = [];
+        if ($this->context) {
+            foreach (explode(',', $this->context) as $column) {
+                $contextValues[] = (string) ($attributes[$column] ?? '');
+            }
+        }
+
+        $index = ($this->mode === 'global' || $this->mode === 'uniquePerTable')
+            ? $encrypter->globalBlindIndex($plaintext, $key, $this->normalise, $contextValues)
+            : $encrypter->blindIndex($plaintext, $key, $this->normalise, $contextValues);
+
         return [
             $key => $encrypter->encryptString($plaintext),
-            $this->indexColumn => $encrypter->blindIndex($plaintext, $key, $this->normalise),
+            $this->indexColumn => $index,
         ];
     }
 }

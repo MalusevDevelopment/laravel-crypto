@@ -57,6 +57,7 @@ use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Contracts\Encryption\Encrypter;
 use Illuminate\Contracts\Encryption\EncryptException;
 use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Encryption\Encrypter as LaravelConcreteEncrypter;
 use Illuminate\Encryption\EncryptionServiceProvider;
 use Illuminate\Support\Facades\Crypt;
@@ -81,6 +82,11 @@ class ServiceProvider extends EncryptionServiceProvider
             PasswordChanged::class,
             RewrapUserKeyOnPasswordChange::class,
         );
+
+        Blueprint::macro('blindIndex', function (string $column, int $length = 32) {
+            /** @var Blueprint $this */
+            return $this->binary($column.'_index', length: $length);
+        });
 
         Crypt::macro('encryptFile', function (string $inputFilePath, string $outputFilePath): void {
             /** @var LibEncrypter $this */

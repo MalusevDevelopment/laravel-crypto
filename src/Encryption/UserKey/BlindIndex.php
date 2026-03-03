@@ -62,6 +62,8 @@ final readonly class BlindIndex
      * @param  string  $column  Column name — used to derive a per-column sub-key
      * @param  bool  $normalise  When true, lowercases and trims the value before
      *                           hashing so that 'Alice' and ' alice ' match.
+     * @param  string|null  $key  Optional override key. If null, the user key from context is used.
+     * @param  array<string, mixed>  $context  Optional additional context values to include in the hash.
      * @return string Raw 32-byte binary index — store in a binary(32) column.
      *
      * @throws MissingEncryptionContextException|SodiumException when no user key is loaded
@@ -70,11 +72,16 @@ final readonly class BlindIndex
         #[SensitiveParameter] string $value,
         string $column,
         bool $normalise = true,
+        ?string $key = null,
+        array $context = [],
     ): string {
-        $userKey = $this->context->get();
+        $userKey = $key ?? $this->context->get();
         $subKey = $this->deriveColumnSubKey($userKey, $column);
 
         $input = $normalise ? mb_strtolower(trim($value)) : $value;
+        if ($context !== []) {
+            $input .= '|'.implode('|', $context);
+        }
 
         return sodium_crypto_generichash($input, $subKey, self::INDEX_BYTES);
     }
@@ -88,12 +95,14 @@ final readonly class BlindIndex
         #[SensitiveParameter] string $value,
         string $column,
         bool $normalise = true,
+        ?string $key = null,
+        array $context = [],
     ): bool {
         if (strlen($storedIndex) !== self::INDEX_BYTES) {
             return false;
         }
 
-        $computed = $this->compute($value, $column, $normalise);
+        $computed = $this->compute($value, $column, $normalise, $key, $context);
 
         return hash_equals($storedIndex, $computed);
     }

@@ -20,7 +20,13 @@ return new class extends Migration
             $table->text('secret_note')->nullable();
             $table->text('ssn')->nullable();
             // Blind index for SSN — enables WHERE ssn_index = ? without decryption
-            $table->binary('ssn_index', length: 32)->nullable()->index();
+            $table->blindIndex('ssn')->nullable()->index();
+            // JSON-encrypted columns
+            $table->text('medical_history')->nullable();
+            $table->text('address')->nullable();
+            // JSON-encrypted + blind-indexed on the 'email' sub-key
+            $table->text('profile')->nullable();
+            $table->blindIndex('profile_email')->nullable()->index();
             $table->rememberToken();
             $table->timestamps();
         });

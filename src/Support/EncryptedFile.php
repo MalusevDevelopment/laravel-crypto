@@ -5,8 +5,9 @@ declare(strict_types=1);
 namespace CodeLieutenant\LaravelCrypto\Support;
 
 use Illuminate\Support\Facades\Crypt;
+use RuntimeException;
 
-class EncryptedFile
+final class EncryptedFile
 {
     private string $encryptedPath;
 
@@ -89,7 +90,7 @@ class EncryptedFile
         $stream = fopen($path, 'rb');
 
         if ($stream === false) {
-            throw new \RuntimeException(sprintf('Failed to open stream for decrypted file: %s', $path));
+            throw new RuntimeException(sprintf('Failed to open stream for decrypted file: %s', $path));
         }
 
         return $stream;
