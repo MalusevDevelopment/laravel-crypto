@@ -10,6 +10,7 @@ Laravel Crypto provides a simple and easy-to-use API for encrypting, decrypting,
 ## Why Laravel Crypto?
 
 - **Modern Algorithms**: Support for XChaCha20-Poly1305, AES-256-GCM, AEGIS-128L, AEGIS-256, XSalsa20-Poly1305, Blake2b, and EdDSA.
+- **Per-User Encryption**: Secure data using keys derived from and unique to each user, ensuring data privacy even if the `APP_KEY` is compromised.
 - **Performance**: High-performance cryptographic operations utilizing hardware acceleration where available.
 - **Drop-in Replacement**: Seamlessly replaces Laravel's default `EncryptionServiceProvider`.
 - **Comprehensive**: Includes support for hashing, signing (symmetric and asymmetric), file encryption, Eloquent casting for encrypted files, and various data encoders (JSON, MessagePack, Igbinary).
@@ -155,6 +156,27 @@ $document->file->putContents('Secret Data');
 $document->save();
 ```
 
+### User Encryption
+
+Securely encrypt user data using their own unique encryption key.
+
+```php
+use CodeLieutenant\LaravelCrypto\Casts\UserEncryptedWithIndex;
+use Illuminate\Database\Eloquent\Model;
+
+class UserSecret extends Model
+{
+    protected function casts(): array
+    {
+        return [
+            'ssn' => UserEncryptedWithIndex::class . ':ssn_index',
+        ];
+    }
+}
+```
+
+For more details on setting up and using per-user encryption, see the [User Encryption documentation](docs/UserEncryption.md).
+
 ## Performance
 
 Benchmarks conducted on various data sizes (PHP 8.5.1, Sodium extension enabled) on a Macbook M4 Pro 48GB RAM.
@@ -200,6 +222,7 @@ For detailed information, please refer to the following documentation:
 
 - [Console Commands](docs/Commands.md)
 - [Encryption](docs/Encryption.md)
+- [User Encryption](docs/UserEncryption.md)
 - [Hashing](docs/Hashing.md)
 - [Signing](docs/Signing.md)
 - [Utilities (Encoders, Base64, Random)](docs/Utilities.md)

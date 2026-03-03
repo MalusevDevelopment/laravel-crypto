@@ -3,10 +3,16 @@
 declare(strict_types=1);
 
 use CodeLieutenant\LaravelCrypto\Contracts\KeyLoader;
+use CodeLieutenant\LaravelCrypto\Tests\E2ETestCase;
 use CodeLieutenant\LaravelCrypto\Tests\InMemoryAppKeyKeyLoader;
 use CodeLieutenant\LaravelCrypto\Tests\TestCase;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(TestCase::class)->in(__DIR__);
+// Non-E2E suites
+uses(TestCase::class)->in(__DIR__.'/Unit', __DIR__.'/Feature', __DIR__.'/Architecture');
+
+// E2E suite — workbench routes, real DB, auth
+uses(E2ETestCase::class, RefreshDatabase::class)->in(__DIR__.'/E2E');
 
 function inMemoryKeyLoader(?int $length = null, array $previousKeys = []): KeyLoader
 {

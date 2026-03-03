@@ -10,6 +10,7 @@ use CodeLieutenant\LaravelCrypto\Contracts\Hashing;
 use CodeLieutenant\LaravelCrypto\Contracts\KeyLoader;
 use CodeLieutenant\LaravelCrypto\Contracts\PublicKeySigning;
 use CodeLieutenant\LaravelCrypto\Contracts\Signing;
+use CodeLieutenant\LaravelCrypto\Contracts\UserEncryptionContext as UserEncryptionContextContract;
 use CodeLieutenant\LaravelCrypto\Encoder\IgbinaryEncoder;
 use CodeLieutenant\LaravelCrypto\Encoder\JsonEncoder;
 use CodeLieutenant\LaravelCrypto\Encoder\MessagePackEncoder;
@@ -24,7 +25,12 @@ use CodeLieutenant\LaravelCrypto\Encryption\Providers\AesGcm256Encrypter;
 use CodeLieutenant\LaravelCrypto\Encryption\Providers\OpenSSLEncrypter;
 use CodeLieutenant\LaravelCrypto\Encryption\Providers\SecretBoxEncrypter;
 use CodeLieutenant\LaravelCrypto\Encryption\Providers\XChaCha20Poly1305Encrypter;
+use CodeLieutenant\LaravelCrypto\Encryption\UserKey\BlindIndex;
+use CodeLieutenant\LaravelCrypto\Encryption\UserKey\UserEncrypter;
+use CodeLieutenant\LaravelCrypto\Encryption\UserKey\UserEncryptionContext;
+use CodeLieutenant\LaravelCrypto\Encryption\UserKey\UserSecretManager;
 use CodeLieutenant\LaravelCrypto\Enums\Encryption;
+use CodeLieutenant\LaravelCrypto\Events\PasswordChanged;
 use CodeLieutenant\LaravelCrypto\Hashing\Blake2b;
 use CodeLieutenant\LaravelCrypto\Hashing\HashingManager;
 use CodeLieutenant\LaravelCrypto\Hashing\Sha256;
@@ -39,6 +45,7 @@ use CodeLieutenant\LaravelCrypto\Keys\Loaders\Blake2BHashingKeyLoader;
 use CodeLieutenant\LaravelCrypto\Keys\Loaders\EdDSASignerKeyLoader;
 use CodeLieutenant\LaravelCrypto\Keys\Loaders\FileKeyLoader;
 use CodeLieutenant\LaravelCrypto\Keys\Loaders\HmacKeyLoader;
+use CodeLieutenant\LaravelCrypto\Listeners\RewrapUserKeyOnPasswordChange;
 use CodeLieutenant\LaravelCrypto\Signing\EdDSA\EdDSA;
 use CodeLieutenant\LaravelCrypto\Signing\Hmac\Blake2b as HmacBlake2b;
 use CodeLieutenant\LaravelCrypto\Signing\Hmac\Sha256 as HmacSha256;
@@ -50,6 +57,7 @@ use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Contracts\Encryption\Encrypter;
 use Illuminate\Contracts\Encryption\EncryptException;
 use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Encryption\Encrypter as LaravelConcreteEncrypter;
 use Illuminate\Encryption\EncryptionServiceProvider;
 use Illuminate\Support\Facades\Crypt;
@@ -65,7 +73,20 @@ class ServiceProvider extends EncryptionServiceProvider
     {
         if ($this->app->runningInConsole()) {
             $this->publishes([$this->getConfigPath() => config_path('crypto.php')]);
+            $this->publishes([
+                __DIR__.'/../database/migrations' => database_path('migrations'),
+            ], 'laravel-crypto-migrations');
         }
+
+        $this->app['events']->listen(
+            PasswordChanged::class,
+            RewrapUserKeyOnPasswordChange::class,
+        );
+
+        Blueprint::macro('blindIndex', function (string $column, int $length = 32) {
+            /** @var Blueprint $this */
+            return $this->binary($column.'_index', length: $length);
+        });
 
         Crypt::macro('encryptFile', function (string $inputFilePath, string $outputFilePath): void {
             /** @var LibEncrypter $this */
@@ -129,7 +150,54 @@ class ServiceProvider extends EncryptionServiceProvider
         $this->registerKeyLoaders();
         $this->registerSigners();
         $this->registerHashers();
+        $this->registerPerUserEncryption();
         parent::register();
+    }
+
+    protected function registerPerUserEncryption(): void
+    {
+        // Request-scoped context — one instance per HTTP request
+        $this->app->scoped(UserEncryptionContextContract::class, UserEncryptionContext::class);
+        $this->app->scoped(UserEncryptionContext::class, UserEncryptionContext::class);
+
+        // UserSecretManager — stateless, safe as singleton
+        $this->app->singleton(UserSecretManager::class, static function (): UserSecretManager {
+            return new UserSecretManager(
+                opsLimit: (int) config('crypto.per_user.opslimit', SODIUM_CRYPTO_PWHASH_OPSLIMIT_INTERACTIVE),
+                memLimit: (int) config('crypto.per_user.memlimit', SODIUM_CRYPTO_PWHASH_MEMLIMIT_INTERACTIVE),
+            );
+        });
+
+        // UserEncrypter — scoped (reads from per-request context)
+        $this->app->scoped(UserEncrypter::class, static function (Application $app): UserEncrypter {
+            $fileDriver = $app->make(Repository::class)->get(
+                'crypto.file_encryption.driver',
+                SecretStreamFileEncrypter::class,
+            );
+
+            $fileEncrypter = match ($fileDriver) {
+                NativeFileEncrypter::class, 'native' => new NativeFileEncrypter($app->make(\CodeLieutenant\LaravelCrypto\Contracts\EncrypterProvider::class)),
+                XSalsaHmacFileEncrypter::class, 'xsalsa-hmac' => new XSalsaHmacFileEncrypter,
+                default => new SecretStreamFileEncrypter,
+            };
+
+            return new UserEncrypter(
+                context: $app->make(UserEncryptionContextContract::class),
+                fileEncrypter: $fileEncrypter,
+                blindIndex: $app->make(BlindIndex::class),
+            );
+        });
+
+        // BlindIndex — scoped (reads from per-request context)
+        $this->app->scoped(
+            BlindIndex::class,
+            static fn (Application $app) => new BlindIndex(
+                $app->make(UserEncryptionContextContract::class),
+            ),
+        );
+
+        // 'user-crypt' alias — used by the UserCrypt facade
+        $this->app->alias(UserEncrypter::class, 'user-crypt');
     }
 
     protected function registerEncoder(): void
