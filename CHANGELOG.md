@@ -1,10 +1,26 @@
 # Changelog
 
-## [v2.0.0](https://github.com/MalusevDevelopment/laravel-crypto/releases/tag/v2.0.0) (2026-02-26)
+## [Unreleased](https://github.com/MalusevDevelopment/laravel-crypto/releases/tag/v3.0.0-alpha1)
+
+[Full Changelog](https://github.com/MalusevDevelopment/laravel-crypto/compare/v3.0.0-alpha1...HEAD)
+
+**Merged pull requests:**
+
+- chore\(deps\): Bump league/commonmark from 2.8.0 to 2.8.1 [\#42](https://github.com/MalusevDevelopment/laravel-crypto/pull/42) ([dependabot[bot]](https://github.com/apps/dependabot))
+
+## [v3.0.0-alpha1](https://github.com/MalusevDevelopment/laravel-crypto/releases/tag/v3.0.0-alpha1) (2026-03-10)
+
+[Full Changelog](https://github.com/MalusevDevelopment/laravel-crypto/compare/v2.0.0...v3.0.0-alpha1)
+
+**Merged pull requests:**
+
+- Feat/per user encryptio [\#41](https://github.com/MalusevDevelopment/laravel-crypto/pull/41) ([CodeLieutenant](https://github.com/CodeLieutenant))
+
+## [v2.0.0](https://github.com/MalusevDevelopment/laravel-crypto/releases/tag/v3.0.0-alpha1) (2026-02-26)
 
 [Full Changelog](https://github.com/MalusevDevelopment/laravel-crypto/compare/v1.2.0...v2.0.0)
 
-## [v1.2.0](https://github.com/MalusevDevelopment/laravel-crypto/releases/tag/v2.0.0) (2026-01-20)
+## [v1.2.0](https://github.com/MalusevDevelopment/laravel-crypto/releases/tag/v3.0.0-alpha1) (2026-01-20)
 
 [Full Changelog](https://github.com/MalusevDevelopment/laravel-crypto/compare/v1.0.1...v1.2.0)
 
@@ -22,11 +38,11 @@
 - Bump symfony/http-foundation from 6.4.4 to 6.4.14 [\#31](https://github.com/MalusevDevelopment/laravel-crypto/pull/31) ([dependabot[bot]](https://github.com/apps/dependabot))
 - Bump symfony/process from 6.4.4 to 6.4.14 [\#30](https://github.com/MalusevDevelopment/laravel-crypto/pull/30) ([dependabot[bot]](https://github.com/apps/dependabot))
 
-## [v1.0.1](https://github.com/MalusevDevelopment/laravel-crypto/releases/tag/v2.0.0) (2024-03-15)
+## [v1.0.1](https://github.com/MalusevDevelopment/laravel-crypto/releases/tag/v3.0.0-alpha1) (2024-03-15)
 
 [Full Changelog](https://github.com/MalusevDevelopment/laravel-crypto/compare/v1.0.0...v1.0.1)
 
-## [v1.0.0](https://github.com/MalusevDevelopment/laravel-crypto/releases/tag/v2.0.0) (2024-03-15)
+## [v1.0.0](https://github.com/MalusevDevelopment/laravel-crypto/releases/tag/v3.0.0-alpha1) (2024-03-15)
 
 [Full Changelog](https://github.com/MalusevDevelopment/laravel-crypto/compare/v1.0.0-rc1...v1.0.0)
 
@@ -50,35 +66,35 @@
 - Change namespace [\#20](https://github.com/MalusevDevelopment/laravel-crypto/pull/20) ([CodeLieutenant](https://github.com/CodeLieutenant))
 - Feat/pest tests [\#14](https://github.com/MalusevDevelopment/laravel-crypto/pull/14) ([CodeLieutenant](https://github.com/CodeLieutenant))
 
-## [v1.0.0-rc1](https://github.com/MalusevDevelopment/laravel-crypto/releases/tag/v2.0.0) (2024-03-05)
+## [v1.0.0-rc1](https://github.com/MalusevDevelopment/laravel-crypto/releases/tag/v3.0.0-alpha1) (2024-03-05)
 
 [Full Changelog](https://github.com/MalusevDevelopment/laravel-crypto/compare/v1.0.0-beta2...v1.0.0-rc1)
 
-## [v1.0.0-beta2](https://github.com/MalusevDevelopment/laravel-crypto/releases/tag/v2.0.0) (2024-03-05)
+## [v1.0.0-beta2](https://github.com/MalusevDevelopment/laravel-crypto/releases/tag/v3.0.0-alpha1) (2024-03-05)
 
 [Full Changelog](https://github.com/MalusevDevelopment/laravel-crypto/compare/v1.0.0-beta1...v1.0.0-beta2)
 
-## [v1.0.0-beta1](https://github.com/MalusevDevelopment/laravel-crypto/releases/tag/v2.0.0) (2024-02-28)
+## [v1.0.0-beta1](https://github.com/MalusevDevelopment/laravel-crypto/releases/tag/v3.0.0-alpha1) (2024-02-28)
 
 [Full Changelog](https://github.com/MalusevDevelopment/laravel-crypto/compare/v1.0.0-alpha2...v1.0.0-beta1)
 
-## [v1.0.0-alpha2](https://github.com/MalusevDevelopment/laravel-crypto/releases/tag/v2.0.0) (2024-02-28)
+## [v1.0.0-alpha2](https://github.com/MalusevDevelopment/laravel-crypto/releases/tag/v3.0.0-alpha1) (2024-02-28)
 
 [Full Changelog](https://github.com/MalusevDevelopment/laravel-crypto/compare/v1.0.0-alpha1...v1.0.0-alpha2)
 
-## [v1.0.0-alpha1](https://github.com/MalusevDevelopment/laravel-crypto/releases/tag/v2.0.0) (2024-02-27)
+## [v1.0.0-alpha1](https://github.com/MalusevDevelopment/laravel-crypto/releases/tag/v3.0.0-alpha1) (2024-02-27)
 
 [Full Changelog](https://github.com/MalusevDevelopment/laravel-crypto/compare/v0.1.0...v1.0.0-alpha1)
 
-## [v0.1.0](https://github.com/MalusevDevelopment/laravel-crypto/releases/tag/v2.0.0) (2020-08-07)
+## [v0.1.0](https://github.com/MalusevDevelopment/laravel-crypto/releases/tag/v3.0.0-alpha1) (2020-08-07)
 
 [Full Changelog](https://github.com/MalusevDevelopment/laravel-crypto/compare/v0.0.2...v0.1.0)
 
-## [v0.0.2](https://github.com/MalusevDevelopment/laravel-crypto/releases/tag/v2.0.0) (2020-08-07)
+## [v0.0.2](https://github.com/MalusevDevelopment/laravel-crypto/releases/tag/v3.0.0-alpha1) (2020-08-07)
 
 [Full Changelog](https://github.com/MalusevDevelopment/laravel-crypto/compare/v0.0.1...v0.0.2)
 
-## [v0.0.1](https://github.com/MalusevDevelopment/laravel-crypto/releases/tag/v2.0.0) (2020-08-05)
+## [v0.0.1](https://github.com/MalusevDevelopment/laravel-crypto/releases/tag/v3.0.0-alpha1) (2020-08-05)
 
 [Full Changelog](https://github.com/MalusevDevelopment/laravel-crypto/compare/8d1abddf068bb7235bf78811b3e1ff2f7c207d10...v0.0.1)
 
