@@ -25,12 +25,12 @@ final readonly class Aegis256GCMEncrypter implements EncrypterProvider
 
     public function encrypt(#[SensitiveParameter] string $key, #[SensitiveParameter] mixed $value, string $nonce): string
     {
-        return sodium_crypto_aead_aegis256_encrypt($value, '', $nonce, $key);
+        return sodium_crypto_aead_aegis256_encrypt($value, $nonce, $nonce, $key);
     }
 
     public function decrypt(#[SensitiveParameter] string $key, string $payload, string $nonce): mixed
     {
-        $decrypted = sodium_crypto_aead_aegis256_decrypt($payload, '', $nonce, $key);
+        $decrypted = sodium_crypto_aead_aegis256_decrypt($payload, $nonce, $nonce, $key);
 
         throw_if($decrypted === false, DecryptException::class, 'Payload cannot be decrypted');
 
@@ -39,12 +39,12 @@ final readonly class Aegis256GCMEncrypter implements EncrypterProvider
 
     public function encryptChunk(#[SensitiveParameter] string $key, string $chunk, string $nonce): string
     {
-        return sodium_crypto_aead_aegis256_encrypt($chunk, '', $nonce, $key);
+        return sodium_crypto_aead_aegis256_encrypt($chunk, $nonce, $nonce, $key);
     }
 
     public function decryptChunk(#[SensitiveParameter] string $key, string $chunk, string $nonce): string
     {
-        $decrypted = sodium_crypto_aead_aegis256_decrypt($chunk, '', $nonce, $key);
+        $decrypted = sodium_crypto_aead_aegis256_decrypt($chunk, $nonce, $nonce, $key);
 
         if ($decrypted === false) {
             throw new DecryptException('Payload cannot be decrypted');

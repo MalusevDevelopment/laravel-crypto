@@ -25,12 +25,12 @@ final readonly class AesGcm256Encrypter implements EncrypterProvider
 
     public function encrypt(#[SensitiveParameter] string $key, #[SensitiveParameter] mixed $value, string $nonce): string
     {
-        return sodium_crypto_aead_aes256gcm_encrypt((string) $value, '', $nonce, $key);
+        return sodium_crypto_aead_aes256gcm_encrypt((string) $value, $nonce, $nonce, $key);
     }
 
     public function decrypt(#[SensitiveParameter] string $key, string $payload, string $nonce): mixed
     {
-        $value = sodium_crypto_aead_aes256gcm_decrypt($payload, '', $nonce, $key);
+        $value = sodium_crypto_aead_aes256gcm_decrypt($payload, $nonce, $nonce, $key);
 
         throw_if($value === false, DecryptException::class, 'Payload cannot be decrypted');
 
@@ -39,12 +39,12 @@ final readonly class AesGcm256Encrypter implements EncrypterProvider
 
     public function encryptChunk(#[SensitiveParameter] string $key, string $chunk, string $nonce): string
     {
-        return sodium_crypto_aead_aes256gcm_encrypt($chunk, '', $nonce, $key);
+        return sodium_crypto_aead_aes256gcm_encrypt($chunk, $nonce, $nonce, $key);
     }
 
     public function decryptChunk(#[SensitiveParameter] string $key, string $chunk, string $nonce): string
     {
-        $decrypted = sodium_crypto_aead_aes256gcm_decrypt($chunk, '', $nonce, $key);
+        $decrypted = sodium_crypto_aead_aes256gcm_decrypt($chunk, $nonce, $nonce, $key);
 
         if ($decrypted === false) {
             throw new DecryptException('Payload cannot be decrypted');

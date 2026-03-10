@@ -89,7 +89,50 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Crypto Signing
+    | Per-User Encryption
+    |--------------------------------------------------------------------------
+    |
+    | Controls how the per-user encryption key token is transported between
+    | the server and the client.
+    |
+    | token_header   — HTTP request/response header name used by SPA / API clients.
+    |
+    | cookie_name    — HTTP-only cookie name used by web (browser) clients.
+    |                  Set to null to disable cookie transport entirely.
+    |
+    | cookie_encrypt — When true, the cookie value is encrypted with Laravel's
+    |                  default encrypter (APP_KEY) before being written, and
+    |                  decrypted transparently on read.  This adds a second layer
+    |                  of protection for the token at rest in the browser cookie jar.
+    |
+    | cookie_http_only — Prevents JavaScript from reading the cookie.
+    |                    Should always be true (this is the whole point).
+    |
+    | cookie_secure  — Send the cookie only over HTTPS. Defaults to the value
+    |                  of the 'session.secure' config key.
+    |
+    | cookie_same_site — SameSite cookie attribute. 'lax' is a good default for
+    |                    web apps; use 'strict' for maximum CSRF protection.
+    |
+    | cookie_ttl     — Cookie lifetime in minutes. 0 = session cookie (deleted
+    |                  when the browser closes). Default: 120 minutes.
+    |
+    | opslimit / memlimit — Argon2id parameters for password-wrapped blobs.
+    |
+    */
+    'per_user' => [
+        'token_header' => env('CRYPTO_PER_USER_TOKEN_HEADER', 'X-Encryption-Token'),
+        'cookie_name' => env('CRYPTO_PER_USER_COOKIE_NAME', 'enc_token'),
+        'cookie_encrypt' => (bool) env('CRYPTO_PER_USER_COOKIE_ENCRYPT', true),
+        'cookie_http_only' => true,
+        'cookie_secure' => env('CRYPTO_PER_USER_COOKIE_SECURE', env('SESSION_SECURE_COOKIE', false)),
+        'cookie_same_site' => env('CRYPTO_PER_USER_COOKIE_SAME_SITE', 'lax'),
+        'cookie_ttl' => (int) env('CRYPTO_PER_USER_COOKIE_TTL', 120),
+        'opslimit' => SODIUM_CRYPTO_PWHASH_OPSLIMIT_INTERACTIVE,
+        'memlimit' => SODIUM_CRYPTO_PWHASH_MEMLIMIT_INTERACTIVE,
+    ],
+
+    /*
     |--------------------------------------------------------------------------
     |
     | Used to crypto sign the data. Can be any implementing class of `Signer`
